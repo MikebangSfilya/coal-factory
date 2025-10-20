@@ -1,0 +1,217 @@
+package factory
+
+import (
+	"coalFactory/equipment"
+	"coalFactory/factory/statistic"
+	"coalFactory/miners"
+	"context"
+	"errors"
+	"log/slog"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+const (
+	pick    = "pick"
+	vent    = "vent"
+	trolley = "trolley"
+)
+
+type Miners interface {
+	Run(ctx context.Context) <-chan miners.Coal
+	Info() miners.MinerInfo
+}
+
+type Company struct {
+	Miners map[uuid.UUID]Miners
+	Income chan int //Канал для передачи наших денег в баланс
+
+	CompanyContext context.Context
+	CompanyStop    context.CancelFunc
+
+	mu sync.RWMutex
+
+	Stats *statistic.CompanyStats
+}
+
+func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
+	companyContext, companyStop := context.WithCancel(ctx)
+
+	return &Company{
+		Miners:         make(map[uuid.UUID]Miners),
+		Income:         make(chan int),
+		CompanyContext: companyContext,
+		CompanyStop:    companyStop,
+		Stats:          statistic.New(equip),
+	}
+}
+
+func Start(equip *equipment.Equipments) *Company {
+	comp := NewCompany(context.Background(), equip)
+	go comp.PassiveIncome()
+	go comp.RaiseBalance()
+	return comp
+}
+
+// Возвращает мапу наших рабочих
+func (c *Company) GetMiners() map[uuid.UUID]Miners {
+	copyMap := make(map[uuid.UUID]Miners, len(c.Miners))
+	for k, v := range c.Miners {
+		copyMap[k] = v
+	}
+	return copyMap
+}
+
+func (c *Company) GetMiner(id string) (Miners, error) {
+	iduuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	miner, ok := c.Miners[iduuid]
+	if !ok {
+		return nil, ErrMinerMotExist
+	}
+	return miner, nil
+}
+
+func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	var miner Miners
+
+	switch minerType {
+	case miners.MinerTypeLittle:
+		if c.Stats.Balance.Load() >= miners.LittleSalary {
+			miner = miners.NewLittleMiner()
+			slog.Info("hired little miner", "miners", miner.Info().ID)
+			c.Stats.Balance.Add(-miners.LittleSalary)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	case miners.MinerTypeNormal:
+		if c.Stats.Balance.Load() >= miners.NormalSalary {
+			miner = miners.NewNormalMiner()
+			slog.Info("hired normal miner", "miners", miner.Info().ID)
+			c.Stats.Balance.Add(-miners.NormalSalary)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	case miners.MinerTypePowerful:
+		if c.Stats.Balance.Load() >= miners.PowerfulSalary {
+			miner = miners.NewPowerfulMiner()
+			slog.Info("hired powerful miner", "miners", miner.Info().ID)
+			c.Stats.Balance.Add(-miners.PowerfulSalary)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	}
+	c.Miners[miner.Info().ID] = miner
+
+	coalTranserPoint := miner.Run(context.Background())
+	go func() {
+		for v := range coalTranserPoint {
+			c.Income <- int(v)
+		}
+		delete(c.Miners, miner.Info().ID)
+	}()
+
+	return miner, nil
+}
+
+func (c *Company) RaiseBalance() {
+
+	go func() {
+		for {
+			select {
+			case <-c.CompanyContext.Done():
+				return
+			case val := <-c.Income:
+
+				c.Stats.Balance.Add(int64(val))
+			}
+		}
+	}()
+
+}
+
+// Запуск нашего пассивного дохода равного 1 единице
+func (c *Company) PassiveIncome() {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-c.CompanyContext.Done():
+			return
+		case <-ticker.C:
+			select {
+			case <-c.CompanyContext.Done():
+				return
+			case c.Income <- 1:
+
+			}
+		}
+	}
+}
+
+func (c *Company) GetBalance() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return int(c.Stats.Balance.Load())
+}
+
+func (c *Company) StopGame() {
+	c.CompanyStop()
+}
+
+func (c *Company) WinGame() error {
+	win, err := c.Stats.CheckWinGame()
+	if err != nil {
+		return err
+	}
+	if win {
+		c.StopGame()
+	} else {
+		return errors.New("not win yet")
+	}
+	return nil
+}
+
+func (c *Company) GetEq() equipment.Equipments {
+	return *c.Stats.CheckEquipment()
+}
+
+func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	itemTypelow := strings.ToLower(itemType)
+	switch itemTypelow {
+	case pick:
+		if c.Stats.Balance.Load() >= equipment.PickCost {
+			c.Stats.Equipmet.Pick.Buy()
+			c.Stats.Balance.Add(-equipment.PickCost)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	case vent:
+		if c.Stats.Balance.Load() >= equipment.VentCost {
+			c.Stats.Equipmet.Vent.Buy()
+			c.Stats.Balance.Add(-equipment.VentCost)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	case trolley:
+		if c.Stats.Balance.Load() >= equipment.TrolleyCost {
+			c.Stats.Equipmet.Trolley.Buy()
+			c.Stats.Balance.Add(-equipment.TrolleyCost)
+		} else {
+			return nil, ErrNotEnoughMoney
+		}
+	}
+	return c.Stats.Equipmet, nil
+}
