@@ -56,10 +56,16 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 			case <-ctx.Done():
 				slog.Info("Contex stopped", "contex", ctx)
 				return
+			case <-time.After(m.SleepDuration):
+
+			}
+			select {
+			case <-ctx.Done():
+				return
 			case transferPoint <- Coal(m.CoalIncome.Load()):
 				m.Energy.Add(-1)
-				time.Sleep(m.SleepDuration)
 				log.Println("Worker", m.Id, "+", m.CoalIncome.Load(), "coal")
+
 			}
 		}
 

@@ -17,21 +17,16 @@ type CompanyRepo interface {
 	GetEq() equipment.Equipments
 
 	WinGame() error
-}
-
-type EquipmentRepo interface {
-	Buy(itemType string) (string, error)
+	Buy(itemType string) (*equipment.Equipments, error)
 }
 
 type GameService struct {
-	comp      CompanyRepo
-	equipment EquipmentRepo
+	comp CompanyRepo
 }
 
-func New(company CompanyRepo, equipment EquipmentRepo) *GameService {
+func New(company CompanyRepo) *GameService {
 	return &GameService{
-		comp:      company,
-		equipment: equipment,
+		comp: company,
 	}
 }
 
@@ -70,8 +65,12 @@ func (gs *GameService) CheckWinGame() (bool, error) {
 	return true, nil
 }
 
-func (gs *GameService) Buy(item string) {
-	gs.equipment.Buy(item)
+func (gs *GameService) Buy(item string) (*equipment.Equipments, error) {
+	miner, err := gs.comp.Buy(item)
+	if err != nil {
+		return nil, err
+	}
+	return miner, nil
 }
 
 func (gs *GameService) Items() equipment.Equipments {

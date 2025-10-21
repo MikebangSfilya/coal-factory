@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	PickCost    = 5
+	PickCost    = 5_000
 	VentCost    = 15_000
 	TrolleyCost = 50_000
 )
 
 const (
-	pick    = "pick"
-	vent    = "vent"
-	trolley = "trolley"
+	PickType    = "pick"
+	VentType    = "vent"
+	TrolleyType = "trolley"
 )
 
 type Equipments struct {
@@ -41,15 +41,15 @@ func (e *Equipments) Buy(itemType string) (string, error) {
 	item := strings.ToLower(itemType)
 
 	switch item {
-	case pick:
+	case PickType:
 		e.Pick.Buy()
-		return pick, nil
-	case vent:
+		return PickType, nil
+	case VentType:
 		e.Vent.Buy()
-		return vent, nil
-	case trolley:
+		return VentType, nil
+	case TrolleyType:
 		e.Trolley.Buy()
-		return trolley, nil
+		return TrolleyType, nil
 	default:
 		log.Print("not buy")
 		return "", errors.New("")

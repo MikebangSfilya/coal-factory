@@ -1,7 +1,11 @@
 package dto
 
-import "errors"
+import "fmt"
 
 var (
-	errEmptyType = errors.New("empty MinerType")
+	ErrEmptyMinerType     = fmt.Errorf("empty MinerType")
+	ErrUnknowCommandMiner = fmt.Errorf("unknow MinerType")
+
+	ErrUnknowCommandItem = fmt.Errorf("unknow ItemType")
+	ErrEmptyItemType     = fmt.Errorf("empty ItemType")
 )

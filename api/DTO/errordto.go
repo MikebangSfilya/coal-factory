@@ -20,14 +20,10 @@ func (e ErrorResponse) ToString() string {
 	return string(b)
 }
 
-func NewErrorDto(err error) string {
+func NewErrorDto(err error) ErrorResponse {
 	res := ErrorResponse{
 		Error: err.Error(),
 		Time:  time.Now(),
 	}
-	resJson, err := json.Marshal(res)
-	if err != nil {
-		panic(err)
-	}
-	return string(resJson)
+	return res
 }

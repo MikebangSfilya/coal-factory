@@ -53,11 +53,15 @@ func (m *PowerfulMiner) Run(ctx context.Context) <-chan Coal {
 			select {
 			case <-ctx.Done():
 				return
+			case <-time.After(m.SleepDuration):
+			}
+			select {
+			case <-ctx.Done():
+				return
 			case transferPoint <- Coal(m.CoalIncome.Load()):
 				m.Energy.Add(-1)
-				m.CoalIncome.Add(increaceIncome)
-				time.Sleep(m.SleepDuration)
 			}
+			m.CoalIncome.Add(increaceIncome)
 		}
 
 	}()

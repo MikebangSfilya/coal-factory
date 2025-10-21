@@ -110,6 +110,7 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 			return nil, ErrNotEnoughMoney
 		}
 	}
+
 	c.Miners[miner.Info().ID] = miner
 
 	coalTranserPoint := miner.Run(context.Background())
@@ -131,7 +132,6 @@ func (c *Company) RaiseBalance() {
 			case <-c.CompanyContext.Done():
 				return
 			case val := <-c.Income:
-
 				c.Stats.Balance.Add(int64(val))
 			}
 		}
@@ -175,8 +175,6 @@ func (c *Company) WinGame() error {
 	}
 	if win {
 		c.StopGame()
-	} else {
-		return errors.New("not win yet")
 	}
 	return nil
 }
@@ -193,25 +191,31 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	switch itemTypelow {
 	case pick:
 		if c.Stats.Balance.Load() >= equipment.PickCost {
-			c.Stats.Equipmet.Pick.Buy()
+			c.Stats.Equipmet.Buy(pick)
 			c.Stats.Balance.Add(-equipment.PickCost)
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	case vent:
 		if c.Stats.Balance.Load() >= equipment.VentCost {
-			c.Stats.Equipmet.Vent.Buy()
+			c.Stats.Equipmet.Buy(vent)
 			c.Stats.Balance.Add(-equipment.VentCost)
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	case trolley:
 		if c.Stats.Balance.Load() >= equipment.TrolleyCost {
-			c.Stats.Equipmet.Trolley.Buy()
+			c.Stats.Equipmet.Buy(trolley)
 			c.Stats.Balance.Add(-equipment.TrolleyCost)
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
+	default:
+		return nil, errors.New("unknown item type: " + itemType)
 	}
 	return c.Stats.Equipmet, nil
+}
+
+func (c *Company) SetBalance(balance int) {
+	c.Stats.Balance.Store(int64(balance))
 }

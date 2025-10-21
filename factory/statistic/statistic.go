@@ -2,6 +2,7 @@ package statistic
 
 import (
 	"coalFactory/equipment"
+	"log/slog"
 	"sync/atomic"
 	"time"
 )
@@ -32,12 +33,14 @@ func New(equip *equipment.Equipments) *CompanyStats {
 // Проверяет выигрышь если все куплено. Если все куплено отмечает время победы
 func (cs *CompanyStats) CheckWinGame() (bool, error) {
 	if !cs.Equipmet.AllBuyed() {
+		slog.Info("The user checked the victory, the victory was not achieved.", "INFO", errNotWin)
 		return false, errNotWin
 	}
 	ended := time.Now()
 
 	cs.TimeEnd = &ended
 	cs.Win = true
+	slog.Info("The user checked the victory, the victory was achieved.")
 	return true, nil
 }
 

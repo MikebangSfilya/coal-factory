@@ -19,7 +19,7 @@ func main() {
 
 	company := factory.Start(equip)
 
-	service := service.New(company, equip)
+	service := service.New(company)
 
 	handl := handlers.New(service)
 
