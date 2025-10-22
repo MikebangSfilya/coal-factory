@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -18,10 +18,13 @@ type HTTPRepo interface {
 	//Items
 	BuyItem(w http.ResponseWriter, r *http.Request)
 	ItemsInfo(w http.ResponseWriter, r *http.Request)
+
+	CloseServer(f func() error)
 }
 
 type Server struct {
 	handlers HTTPRepo
+	server   *http.Server
 }
 
 func New(handlers HTTPRepo) *Server {
@@ -42,6 +45,17 @@ func (s *Server) Start() error {
 	r.Post("/miners/items", s.handlers.BuyItem)
 	r.Get("/miners/items", s.handlers.ItemsInfo)
 
-	fmt.Print("started")
-	return http.ListenAndServe(":9091", r)
+	s.server = &http.Server{
+		Addr:    ":9091",
+		Handler: r,
+	}
+
+	s.handlers.CloseServer(s.server.Close)
+
+	err := s.server.ListenAndServe()
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+
+	return err
 }

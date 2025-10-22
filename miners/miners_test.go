@@ -39,25 +39,6 @@ func Test_PowerfulMiner(t *testing.T) {
 		}
 	}
 
-	// t.Run("miner test cancel", func(t *testing.T) {
-	// 	ctx, cancel := context.WithCancel(context.Background())
-
-	// 	ch := miner.Run(ctx)
-
-	// 	<-ch
-
-	// 	cancel()
-
-	// 	select {
-	// 	case _, ok := <-ch:
-	// 		if ok {
-	// 			t.Errorf("канал должен был быть закрыт после отмены контекста")
-	// 		}
-	// 	case <-time.After(d0):
-	// 		t.Errorf("канал не закрыт спустя 1 секунду")
-	// 	}
-	// })
-
 }
 
 func TestTestRunMiners(t *testing.T) {
@@ -68,24 +49,28 @@ func TestTestRunMiners(t *testing.T) {
 		miner     Miner
 		coal      int64
 		timeSleep time.Duration
+		energy    int
 	}{
 		{
 			name:      "Testing little miner",
 			miner:     miners.NewLittleMiner(),
 			coal:      1,
 			timeSleep: 3*time.Second + deltaStart,
+			energy:    1,
 		},
 		{
 			name:      "Testing normal miner",
 			miner:     miners.NewNormalMiner(),
 			coal:      3,
 			timeSleep: 2*time.Second + deltaStart,
+			energy:    1,
 		},
 		{
 			name:      "Testing powerful miner",
 			miner:     miners.NewPowerfulMiner(),
 			coal:      10,
 			timeSleep: 1*time.Second + deltaStart,
+			energy:    1,
 		},
 	}
 
@@ -104,6 +89,27 @@ func TestTestRunMiners(t *testing.T) {
 				}
 			case <-time.After(tc.timeSleep + 1*time.Second):
 				t.Errorf("Майнер не добывает уголь слишком долго")
+			}
+		})
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			ch := tc.miner.Run(ctx)
+
+			<-ch
+
+			cancel()
+
+			select {
+			case _, ok := <-ch:
+				if ok {
+					t.Errorf("канал должен был быть закрыт после отмены контекста")
+				}
+			case <-time.After(1 * time.Second):
+				t.Errorf("канал не закрыт спустя 1 секунду")
 			}
 		})
 	}

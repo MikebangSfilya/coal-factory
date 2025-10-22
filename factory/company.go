@@ -133,6 +133,7 @@ func (c *Company) RaiseBalance() {
 				return
 			case val := <-c.Income:
 				c.Stats.Balance.Add(int64(val))
+				c.Stats.TotalBalanced.Add(int64(val))
 			}
 		}
 	}()

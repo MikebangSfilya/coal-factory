@@ -8,25 +8,28 @@ import (
 )
 
 type CompanyStats struct {
-	Balance     *atomic.Int64
-	income      *atomic.Int64 //На самом деле пока никак не работает, надо подумать как аккамулировать весь доход с каналов
-	Equipmet    *equipment.Equipments
-	Win         bool
-	TimeStarted time.Time
-	TimeEnd     *time.Time
+	Balance             *atomic.Int64
+	TotalBalanced       *atomic.Int64
+	Equipmet            *equipment.Equipments
+	Win                 bool
+	TimeStarted         time.Time
+	TimeEnd             *time.Time
+	LittleMinersHired   int
+	NormalMinersHired   int
+	PowerfulMinersHired int
 }
 
 func New(equip *equipment.Equipments) *CompanyStats {
 
-	income := &atomic.Int64{}
+	totalBalance := &atomic.Int64{}
 	Balance := &atomic.Int64{}
 
 	return &CompanyStats{
-		Balance:     Balance,
-		income:      income,
-		Equipmet:    equip,
-		Win:         false,
-		TimeStarted: time.Now(),
+		Balance:       Balance,
+		TotalBalanced: totalBalance,
+		Equipmet:      equip,
+		Win:           false,
+		TimeStarted:   time.Now(),
 	}
 }
 
