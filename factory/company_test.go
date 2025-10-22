@@ -13,7 +13,7 @@ func TestPassiveIncome(t *testing.T) {
 	t.Run("passive", func(t *testing.T) {
 		eq := equipment.NewEquipmet()
 
-		var incomes []int
+		var incomes []int64
 
 		comp := factory.NewCompany(context.Background(), eq)
 		go comp.PassiveIncome()
@@ -23,7 +23,7 @@ func TestPassiveIncome(t *testing.T) {
 				if coal == 0 {
 					t.Errorf("ожидалось получение значений")
 				}
-				incomes = append(incomes, coal)
+				incomes = append(incomes, int64(coal))
 			case <-time.After(2 * time.Second):
 				t.Errorf("доход не идет слишком долго")
 

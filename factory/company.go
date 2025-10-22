@@ -27,7 +27,7 @@ type Miners interface {
 
 type Company struct {
 	Miners map[uuid.UUID]Miners
-	Income chan int //Канал для передачи наших денег в баланс
+	Income chan miners.Coal //Канал для передачи наших денег в баланс
 
 	CompanyContext context.Context
 	CompanyStop    context.CancelFunc
@@ -42,7 +42,7 @@ func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
 
 	return &Company{
 		Miners:         make(map[uuid.UUID]Miners),
-		Income:         make(chan int),
+		Income:         make(chan miners.Coal),
 		CompanyContext: companyContext,
 		CompanyStop:    companyStop,
 		Stats:          statistic.New(equip),
@@ -113,15 +113,21 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 
 	c.Miners[miner.Info().ID] = miner
 
+	c.StartMiner(miner)
+
+	return miner, nil
+}
+
+func (c *Company) StartMiner(miner Miners) {
 	coalTranserPoint := miner.Run(context.Background())
 	go func() {
-		for v := range coalTranserPoint {
-			c.Income <- int(v)
+		c.Stats.Income.Add(int64(miner.Info().CoalPower))
+		defer c.Stats.Income.Add(-int64(miner.Info().CoalPower))
+		for val := range coalTranserPoint {
+			c.Income <- val
 		}
 		delete(c.Miners, miner.Info().ID)
 	}()
-
-	return miner, nil
 }
 
 func (c *Company) RaiseBalance() {
@@ -142,6 +148,7 @@ func (c *Company) RaiseBalance() {
 
 // Запуск нашего пассивного дохода равного 1 единице
 func (c *Company) PassiveIncome() {
+	c.Stats.Income.Add(1)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {

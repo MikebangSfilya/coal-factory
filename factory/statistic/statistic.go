@@ -10,6 +10,7 @@ import (
 type CompanyStats struct {
 	Balance             *atomic.Int64
 	TotalBalanced       *atomic.Int64
+	Income              *atomic.Int64
 	Equipmet            *equipment.Equipments
 	Win                 bool
 	TimeStarted         time.Time
@@ -23,10 +24,12 @@ func New(equip *equipment.Equipments) *CompanyStats {
 
 	totalBalance := &atomic.Int64{}
 	Balance := &atomic.Int64{}
+	income := &atomic.Int64{}
 
 	return &CompanyStats{
 		Balance:       Balance,
 		TotalBalanced: totalBalance,
+		Income:        income,
 		Equipmet:      equip,
 		Win:           false,
 		TimeStarted:   time.Now(),
