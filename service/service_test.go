@@ -10,6 +10,7 @@ import (
 )
 
 func TestGerMiners(t *testing.T) {
+
 	equip := equipment.NewEquipmet()
 
 	company := factory.NewCompany(context.Background(), equip)
@@ -54,8 +55,9 @@ func TestHire(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			eqip := equipment.NewEquipmet()
-			comp := factory.NewCompany(context.Background(), eqip)
+
+			equip := equipment.NewEquipmet()
+			comp := factory.NewCompany(context.Background(), equip)
 			serv := service.New(comp)
 
 			comp.SetBalance(tc.balanceStart)
@@ -79,6 +81,7 @@ func TestHire(t *testing.T) {
 }
 
 func TestGetMiner(t *testing.T) {
+
 	equip := equipment.NewEquipmet()
 
 	company := factory.NewCompany(context.Background(), equip)

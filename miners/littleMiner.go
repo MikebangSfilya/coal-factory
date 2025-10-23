@@ -47,7 +47,6 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 
 	transferPoint := make(chan Coal)
 
-	slog.Info("Worker started work", "ID", m.Id)
 	go func() {
 		defer close(transferPoint)
 
@@ -64,8 +63,6 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 				return
 			case transferPoint <- Coal(m.CoalIncome.Load()):
 				m.Energy.Add(-1)
-				log.Println("Worker", m.Id, "+", m.CoalIncome.Load(), "coal")
-
 			}
 		}
 
@@ -82,6 +79,8 @@ func (m *LittleMiner) Info() MinerInfo {
 	return MinerInfo{
 		ID:        m.Id,
 		MinerType: MinerTypeLittle,
+		Energy:    m.Energy.Load(),
 		CoalPower: Coal(m.CoalIncome.Load()),
+		Cost:      LittleSalary,
 	}
 }

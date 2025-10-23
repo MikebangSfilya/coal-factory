@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -51,8 +52,9 @@ func (s *Server) Start() error {
 	}
 
 	s.handlers.CloseServer(s.server.Close)
-
+	fmt.Println("started")
 	err := s.server.ListenAndServe()
+
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}

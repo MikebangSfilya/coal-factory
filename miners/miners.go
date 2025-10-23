@@ -15,4 +15,5 @@ type MinerInfo struct {
 	MinerType MinerType
 	CoalPower Coal
 	Energy    int64
+	Cost      int64
 }

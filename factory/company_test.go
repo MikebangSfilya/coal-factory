@@ -11,6 +11,7 @@ import (
 func TestPassiveIncome(t *testing.T) {
 
 	t.Run("passive", func(t *testing.T) {
+
 		eq := equipment.NewEquipmet()
 
 		var incomes []int64

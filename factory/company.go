@@ -6,6 +6,7 @@ import (
 	"coalFactory/miners"
 	"context"
 	"errors"
+	"log"
 	"log/slog"
 	"strings"
 	"sync"
@@ -39,7 +40,11 @@ type Company struct {
 
 func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
 	companyContext, companyStop := context.WithCancel(ctx)
-
+	slog.Info( //Лог на будущее если будет возможность делать несколько игроков
+		"create new Company",
+		"layer", "company",
+		"operation", "create",
+	)
 	return &Company{
 		Miners:         make(map[uuid.UUID]Miners),
 		Income:         make(chan miners.Coal),
@@ -53,6 +58,12 @@ func Start(equip *equipment.Equipments) *Company {
 	comp := NewCompany(context.Background(), equip)
 	go comp.PassiveIncome()
 	go comp.RaiseBalance()
+	go comp.ShowIncome()
+	slog.Info(
+		"start company layer",
+		"layer", "company",
+		"operation", "run",
+	)
 	return comp
 }
 
@@ -88,7 +99,6 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 	case miners.MinerTypeLittle:
 		if c.Stats.Balance.Load() >= miners.LittleSalary {
 			miner = miners.NewLittleMiner()
-			slog.Info("hired little miner", "miners", miner.Info().ID)
 			c.Stats.Balance.Add(-miners.LittleSalary)
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -96,7 +106,6 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 	case miners.MinerTypeNormal:
 		if c.Stats.Balance.Load() >= miners.NormalSalary {
 			miner = miners.NewNormalMiner()
-			slog.Info("hired normal miner", "miners", miner.Info().ID)
 			c.Stats.Balance.Add(-miners.NormalSalary)
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -104,7 +113,6 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 	case miners.MinerTypePowerful:
 		if c.Stats.Balance.Load() >= miners.PowerfulSalary {
 			miner = miners.NewPowerfulMiner()
-			slog.Info("hired powerful miner", "miners", miner.Info().ID)
 			c.Stats.Balance.Add(-miners.PowerfulSalary)
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -121,8 +129,26 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 func (c *Company) StartMiner(miner Miners) {
 	coalTranserPoint := miner.Run(context.Background())
 	go func() {
+		slog.Info(
+			"start miner job",
+			"layer", "company",
+			"operation", "run",
+			"miner", miner.Info(),
+			"cost", miner.Info().Cost,
+		)
+
 		c.Stats.Income.Add(int64(miner.Info().CoalPower))
-		defer c.Stats.Income.Add(-int64(miner.Info().CoalPower))
+		defer func() {
+			c.Stats.Income.Add(-int64(miner.Info().CoalPower))
+			slog.Info(
+				"miner finished work",
+				"layer", "company",
+				"operation", "stop",
+				"miner_id", miner.Info().ID,
+				"reason", "energy depleted",
+			)
+		}()
+
 		for val := range coalTranserPoint {
 			c.Income <- val
 		}
@@ -148,7 +174,7 @@ func (c *Company) RaiseBalance() {
 
 // Запуск нашего пассивного дохода равного 1 единице
 func (c *Company) PassiveIncome() {
-	c.Stats.Income.Add(1)
+
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -172,8 +198,14 @@ func (c *Company) GetBalance() int {
 	return int(c.Stats.Balance.Load())
 }
 
-func (c *Company) StopGame() {
-	c.CompanyStop()
+func (c *Company) ShowIncome() {
+	for {
+		c.mu.RLock()
+		b := c.Stats.Income
+		log.Println(b.Load())
+		time.Sleep(1 * time.Second)
+		c.mu.RUnlock()
+	}
 }
 
 func (c *Company) WinGame() error {
@@ -182,7 +214,7 @@ func (c *Company) WinGame() error {
 		return err
 	}
 	if win {
-		c.StopGame()
+		c.CompanyStop()
 	}
 	return nil
 }
@@ -198,32 +230,61 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	itemTypelow := strings.ToLower(itemType)
 	switch itemTypelow {
 	case pick:
-		if c.Stats.Balance.Load() >= equipment.PickCost {
+		if c.Stats.Balance.Load() >= int64(equipment.PickCost) {
+			slog.Info(
+				"equipment purchared",
+				"layer", "company",
+				"operation", "buy",
+				"item", pick,
+				"cost", equipment.PickCost,
+			)
 			c.Stats.Equipmet.Buy(pick)
-			c.Stats.Balance.Add(-equipment.PickCost)
+			c.Stats.Balance.Add(-int64(equipment.PickCost))
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	case vent:
-		if c.Stats.Balance.Load() >= equipment.VentCost {
+		if c.Stats.Balance.Load() >= int64(equipment.VentCost) {
+			slog.Info(
+				"equipment purchared",
+				"layer", "company",
+				"operation", "buy",
+				"item", vent,
+				"cost", equipment.VentCost,
+			)
 			c.Stats.Equipmet.Buy(vent)
-			c.Stats.Balance.Add(-equipment.VentCost)
+			c.Stats.Balance.Add(-int64(equipment.VentCost))
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	case trolley:
-		if c.Stats.Balance.Load() >= equipment.TrolleyCost {
+		if c.Stats.Balance.Load() >= int64(equipment.TrolleyCost) {
+			slog.Info(
+				"equipment purchared",
+				"layer", "company",
+				"operation", "buy",
+				"item", trolley,
+				"cost", equipment.TrolleyCost,
+			)
 			c.Stats.Equipmet.Buy(trolley)
-			c.Stats.Balance.Add(-equipment.TrolleyCost)
+			c.Stats.Balance.Add(-int64(equipment.TrolleyCost))
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	default:
+		slog.Warn(
+			"Uncnown itemType",
+			"layer", "company",
+			"operation", "buy",
+			"item", "unknow",
+			"cost", "-1",
+		)
 		return nil, errors.New("unknown item type: " + itemType)
 	}
 	return c.Stats.Equipmet, nil
 }
 
+// method for unit testing
 func (c *Company) SetBalance(balance int) {
 	c.Stats.Balance.Store(int64(balance))
 }

@@ -1,16 +1,23 @@
 package equipment
 
 import (
+	"coalFactory/config"
 	"errors"
 	"log"
 	"strings"
 )
 
-const (
-	PickCost    = 3_000
-	VentCost    = 15_000
-	TrolleyCost = 50_000
+var (
+	PickCost    = 5000
+	VentCost    = 15000
+	TrolleyCost = 50000
 )
+
+func Init(cfg *config.Configurate) {
+	PickCost = cfg.PickCost
+	VentCost = cfg.VentCost
+	TrolleyCost = cfg.TrolleyCost
+}
 
 const (
 	PickType    = "pick"

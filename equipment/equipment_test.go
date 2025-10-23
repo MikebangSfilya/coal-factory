@@ -1,6 +1,7 @@
 package equipment_test
 
 import (
+	"coalFactory/config"
 	"coalFactory/equipment"
 	"coalFactory/factory"
 	"context"
@@ -14,7 +15,7 @@ import (
 //Сравнить с ожиданием
 
 func TestBuyPick(t *testing.T) {
-
+	cfg := config.Load()
 	eq := equipment.NewEquipmet()
 	company := factory.NewCompany(context.Background(), eq)
 
@@ -37,7 +38,7 @@ func TestBuyPick(t *testing.T) {
 	}
 
 	endBalance := company.GetBalance()
-	expectedBalance := startBalance - equipment.PickCost
+	expectedBalance := startBalance - cfg.PickCost
 
 	if endBalance != expectedBalance {
 		t.Errorf("Неверный балананс, ожидалось %d, получилось %d", expectedBalance, endBalance)
@@ -46,6 +47,12 @@ func TestBuyPick(t *testing.T) {
 }
 
 func TestBuyAll(t *testing.T) {
+	cfg := config.Configurate{
+		PickCost:    5000,
+		VentCost:    15000,
+		TrolleyCost: 50000,
+	}
+	equipment.Init(&cfg)
 	tests := []struct {
 		name         string
 		startBalance int64
@@ -56,36 +63,37 @@ func TestBuyAll(t *testing.T) {
 		wantBought   bool
 	}{
 		{
-			name:         "all ok",
+			name:         "all ok Pick",
 			startBalance: 10_000,
 			item:         "pick",
 			errorNeed:    false,
 			errorType:    nil,
-			wantBalance:  5000,
+			wantBalance:  10_000 - int64(equipment.PickCost),
 			wantBought:   true,
 		},
 		{
-			name:         "all ok",
+			name:         "all ok Vent",
 			startBalance: 20_000,
 			item:         "vent",
 			errorNeed:    false,
 			errorType:    nil,
-			wantBalance:  5000,
+			wantBalance:  20_000 - int64(equipment.VentCost),
 			wantBought:   true,
 		},
 		{
-			name:         "all ok",
+			name:         "all ok Trolley",
 			startBalance: 55_000,
 			item:         "trolley",
 			errorNeed:    false,
 			errorType:    nil,
-			wantBalance:  5000,
+			wantBalance:  55_000 - int64(equipment.TrolleyCost),
 			wantBought:   true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+
 			eq := equipment.NewEquipmet()
 			comp := factory.NewCompany(context.Background(), eq)
 
@@ -142,6 +150,7 @@ func TestBuyAll(t *testing.T) {
 }
 
 func TestAllBuy(t *testing.T) {
+
 	eq := equipment.NewEquipmet()
 
 	eq1 := equipment.NewEquipmet()

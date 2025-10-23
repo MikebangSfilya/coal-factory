@@ -79,5 +79,7 @@ func (m *NormalMiner) Info() MinerInfo {
 		ID:        m.Id,
 		MinerType: MinerTypeNormal,
 		CoalPower: Coal(m.CoalIncome.Load()),
+		Energy:    m.Energy.Load(),
+		Cost:      NormalSalary,
 	}
 }

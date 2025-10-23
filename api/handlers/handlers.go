@@ -14,10 +14,6 @@ import (
 	"github.com/google/uuid"
 )
 
-//Как закрыть сервер?
-//Через дополнительный пакет управляющих сервером и хендлерами, либо же через вызов метода хендлеров в сервере
-//Где-то в
-
 type HandleRepo interface {
 	GetMiners() map[uuid.UUID]factory.Miners
 	GetMiner(id string) (factory.Miners, error)
@@ -146,7 +142,7 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		if err := h.serverClose(); err != nil {
-			
+
 		}
 	}()
 }
@@ -183,7 +179,6 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	_, err := h.service.Buy(itemType)
 	if err != nil {
 		slog.Error("Cant buy")
