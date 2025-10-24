@@ -3,6 +3,7 @@ package service
 import (
 	"coalFactory/equipment"
 	"coalFactory/factory"
+	"coalFactory/factory/statistic"
 	"coalFactory/miners"
 
 	"github.com/google/uuid"
@@ -16,7 +17,7 @@ type CompanyRepo interface {
 	GetBalance() int
 	GetEq() equipment.Equipments
 
-	WinGame() error
+	WinGame() (statistic.CompanyStats, error)
 	Buy(itemType string) (*equipment.Equipments, error)
 }
 
@@ -57,12 +58,12 @@ func (gs *GameService) Balance() int {
 	return gs.comp.GetBalance()
 }
 
-func (gs *GameService) CheckWinGame() (bool, error) {
-	err := gs.comp.WinGame()
+func (gs *GameService) CheckWinGame() (statistic.CompanyStats, error) {
+	statistic, err := gs.comp.WinGame()
 	if err != nil {
-		return false, err
+		return statistic, err
 	}
-	return true, nil
+	return statistic, nil
 }
 
 func (gs *GameService) Buy(item string) (*equipment.Equipments, error) {

@@ -174,7 +174,7 @@ func (c *Company) RaiseBalance() {
 
 // Запуск нашего пассивного дохода равного 1 единице
 func (c *Company) PassiveIncome() {
-
+	c.Stats.Income.Add(1)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -208,15 +208,16 @@ func (c *Company) ShowIncome() {
 	}
 }
 
-func (c *Company) WinGame() error {
+func (c *Company) WinGame() (statistic.CompanyStats, error) {
 	win, err := c.Stats.CheckWinGame()
 	if err != nil {
-		return err
+		return statistic.CompanyStats{}, err
 	}
 	if win {
 		c.CompanyStop()
 	}
-	return nil
+
+	return *c.Stats, nil
 }
 
 func (c *Company) GetEq() equipment.Equipments {

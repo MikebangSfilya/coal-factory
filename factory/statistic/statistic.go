@@ -53,3 +53,19 @@ func (cs *CompanyStats) CheckWinGame() (bool, error) {
 func (cs *CompanyStats) CheckEquipment() *equipment.Equipments {
 	return cs.Equipmet
 }
+
+func (cs *CompanyStats) TimeCompleted() string {
+	if cs.TimeEnd == nil {
+		return ""
+	}
+
+	return cs.TimeEnd.Sub(cs.TimeStarted).String()
+}
+
+func (cs *CompanyStats) GetBalance() int64 {
+	return cs.Balance.Load()
+}
+
+func (cs *CompanyStats) GetTotalBalance() int64 {
+	return cs.TotalBalanced.Load()
+}

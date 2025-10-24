@@ -2,6 +2,7 @@ package dto
 
 import (
 	"coalFactory/equipment"
+	"coalFactory/factory/statistic"
 	"coalFactory/miners"
 )
 
@@ -48,5 +49,19 @@ func NewResp(itemType string) DTORespItem {
 	return DTORespItem{
 		Status: "purchased",
 		Item:   itemType,
+	}
+}
+
+type DTOStats struct {
+	Balance      int64
+	TotalBalance int64
+	TotalTime    string
+}
+
+func DtoStatsNew(companyStats statistic.CompanyStats) DTOStats {
+	return DTOStats{
+		Balance:      companyStats.GetBalance(),
+		TotalBalance: companyStats.GetTotalBalance(),
+		TotalTime:    companyStats.TimeCompleted(),
 	}
 }
