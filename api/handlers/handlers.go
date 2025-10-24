@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	dto "coalFactory/api/DTO"
+	"coalFactory/api/DTO/dto_in"
+	"coalFactory/api/DTO/dto_out"
 	"coalFactory/equipment"
 	"coalFactory/factory"
 	"coalFactory/factory/statistic"
@@ -42,7 +43,7 @@ func (handlers *Handlers) CloseServer(f func() error) {
 
 func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 
-	var dtoin dto.DTOHireMiner
+	var dtoin dto_in.DTOHireMiner
 	if err := json.NewDecoder(r.Body).Decode(&dtoin); err != nil {
 		slog.Error(
 			"failed to decode JSON",
@@ -50,25 +51,25 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"operation", "decode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := dtoin.Validate(); err != nil {
-		if errors.Is(err, dto.ErrEmptyMinerType) {
+		if errors.Is(err, dto_in.ErrEmptyMinerType) {
 			slog.Error("Empty type miner text", "error", err)
-			errDTO := dto.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDto(err)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
-		} else if errors.Is(err, dto.ErrEmptyMinerType) {
+		} else if errors.Is(err, dto_in.ErrEmptyMinerType) {
 			slog.Error("Unknow type miner text", "error", err)
-			errDTO := dto.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDto(err)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
 		} else {
 			slog.Error("InternalServerError", "error", err)
-			errDTO := dto.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDto(err)
 			http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 			return
 		}
@@ -83,7 +84,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"error", err,
 			"cost", miner.Info().Cost,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
@@ -95,7 +96,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -112,7 +113,7 @@ func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -124,7 +125,7 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 
 	miner, err := h.service.GetMiner(id)
 	if err != nil {
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
@@ -136,7 +137,7 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -152,7 +153,7 @@ func (h *Handlers) GetBal(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -163,12 +164,12 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 	stats, err := h.service.CheckWinGame()
 	if err != nil {
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusPreconditionFailed)
 		return
 	}
 
-	dtoStats := dto.DtoStatsNew(stats)
+	dtoStats := dto_out.DtoStatsNew(stats)
 
 	if err := json.NewEncoder(w).Encode(dtoStats); err != nil {
 		slog.Error(
@@ -177,7 +178,7 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -192,21 +193,21 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 
 	var itemType string
-	var dtoItem dto.DTORBuyItem
+	var dtoItem dto_in.DTORBuyItem
 	if err := json.NewDecoder(r.Body).Decode(&dtoItem); err == nil {
 		if err := dtoItem.Validate(); err != nil {
-			if errors.Is(err, dto.ErrEmptyItemType) {
+			if errors.Is(err, dto_in.ErrEmptyItemType) {
 				slog.Error("The user sent an empty json", "error", err)
-				errDTO := dto.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDto(err)
 				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 				return
-			} else if errors.Is(err, dto.ErrUnknowCommandItem) {
+			} else if errors.Is(err, dto_in.ErrUnknowCommandItem) {
 				slog.Error("The user sent wrong itemType", "error", err)
-				errDTO := dto.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDto(err)
 				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			} else {
 				slog.Error("Internal Server Error", "error", err)
-				errDTO := dto.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDto(err)
 				http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 			}
 		}
@@ -215,7 +216,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 		itemType = r.URL.Query().Get("item")
 		if itemType == "" {
 			slog.Error("No item specified in JSON or query")
-			errDTO := dto.NewErrorDto(ErrCannotParse)
+			errDTO := dto_out.NewErrorDto(ErrCannotParse)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
 		}
@@ -223,11 +224,11 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 	_, err := h.service.Buy(itemType)
 	if err != nil {
 		slog.Error("Cant buy")
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
-	dtoResp := dto.NewResp(itemType)
+	dtoResp := dto_out.NewResp(itemType)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(dtoResp); err != nil {
 		slog.Error(
@@ -236,7 +237,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -252,7 +253,7 @@ func (h *Handlers) ItemsInfo(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 	}
 }

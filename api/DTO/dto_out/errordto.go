@@ -1,4 +1,4 @@
-package dto
+package dto_out
 
 import (
 	"encoding/json"

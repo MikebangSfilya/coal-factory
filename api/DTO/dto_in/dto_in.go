@@ -1,8 +1,7 @@
-package dto
+package dto_in
 
 import (
 	"coalFactory/equipment"
-	"coalFactory/factory/statistic"
 	"coalFactory/miners"
 )
 
@@ -38,30 +37,4 @@ func (v *DTORBuyItem) Validate() error {
 		return ErrEmptyItemType
 	}
 
-}
-
-type DTORespItem struct {
-	Status string `json:"status"`
-	Item   string `json:"Item"`
-}
-
-func NewResp(itemType string) DTORespItem {
-	return DTORespItem{
-		Status: "purchased",
-		Item:   itemType,
-	}
-}
-
-type DTOStats struct {
-	Balance      int64
-	TotalBalance int64
-	TotalTime    string
-}
-
-func DtoStatsNew(companyStats statistic.CompanyStats) DTOStats {
-	return DTOStats{
-		Balance:      companyStats.GetBalance(),
-		TotalBalance: companyStats.GetTotalBalance(),
-		TotalTime:    companyStats.TimeCompleted(),
-	}
 }
