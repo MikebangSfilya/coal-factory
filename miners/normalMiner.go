@@ -41,12 +41,6 @@ func NewNormalMiner() *NormalMiner {
 }
 
 func (m *NormalMiner) Run(ctx context.Context) <-chan Coal {
-	//Запускаем нашу горутину в бесконечно цикле
-	// 1. Добываем coal
-	// 2. отнимает от нашей energy 1
-	// 3. Если энергия равна 0 то прекращаем работу
-	// 4. Если энергия еще есть Засыпаем на 3 секунды
-	// 5. Передаем по каналу количество добытого угля
 
 	transferPoint := make(chan Coal)
 

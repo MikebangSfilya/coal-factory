@@ -43,7 +43,6 @@ func NewLittleMiner() *LittleMiner {
 }
 
 func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
-	// #TODO добавить передачу дохода в статистику
 
 	transferPoint := make(chan Coal)
 

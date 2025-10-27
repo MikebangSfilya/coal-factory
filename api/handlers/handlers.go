@@ -17,13 +17,16 @@ import (
 )
 
 type HandleRepo interface {
+	//miners
 	GetMiners() map[uuid.UUID]factory.Miners
 	GetMiner(id string) (factory.Miners, error)
 	Hire(minerType miners.MinerType) (factory.Miners, error)
+	//stats
 	Balance() int
-	CheckWinGame() (statistic.CompanyStats, error)
+	//items
 	Buy(item string) (*equipment.Equipments, error)
 	Items() equipment.Equipments
+	CheckWinGame() (statistic.CompanyStats, error)
 }
 
 type Handlers struct {
@@ -104,9 +107,14 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
-	b := h.service.GetMiners()
+	minersMap := h.service.GetMiners()
 
-	if err := json.NewEncoder(w).Encode(b); err != nil {
+	result := make(map[string]miners.MinerInfo, len(minersMap)) // TODO перенести в сервисный слой обработку
+	for id, miner := range minersMap {
+		result[id.String()] = miner.Info()
+	}
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
 		slog.Error(
 			"failed to encode JSON",
 			"layer", "handlers",
