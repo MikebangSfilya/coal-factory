@@ -5,6 +5,7 @@ import (
 	"coalFactory/factory"
 	"coalFactory/factory/statistic"
 	"coalFactory/miners"
+	"context"
 
 	"github.com/google/uuid"
 )
@@ -12,7 +13,7 @@ import (
 type CompanyRepo interface {
 	GetMiners() map[uuid.UUID]factory.Miners
 	GetMiner(id string) (factory.Miners, error)
-	HireMiner(minerType miners.MinerType) (factory.Miners, error)
+	HireMiner(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
 
 	GetBalance() int
 	GetEq() equipment.Equipments
@@ -44,9 +45,9 @@ func (gs *GameService) GetMiner(id string) (factory.Miners, error) {
 	return miner, nil
 }
 
-func (gs *GameService) Hire(minerType miners.MinerType) (factory.Miners, error) {
+func (gs *GameService) Hire(ctx context.Context, minerType miners.MinerType) (factory.Miners, error) {
 
-	miner, err := gs.comp.HireMiner(minerType)
+	miner, err := gs.comp.HireMiner(ctx, minerType)
 	if err != nil {
 		return nil, err
 	}

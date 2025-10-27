@@ -9,7 +9,7 @@ import (
 
 type CompanyStats struct {
 	Balance             *atomic.Int64
-	TotalBalanced       *atomic.Int64
+	TotalBalance        *atomic.Int64
 	Income              *atomic.Int64
 	Equipmet            *equipment.Equipments
 	Win                 bool
@@ -27,12 +27,16 @@ func New(equip *equipment.Equipments) *CompanyStats {
 	income := &atomic.Int64{}
 
 	return &CompanyStats{
-		Balance:       Balance,
-		TotalBalanced: totalBalance,
-		Income:        income,
-		Equipmet:      equip,
-		Win:           false,
-		TimeStarted:   time.Now(),
+		Balance:             Balance,
+		TotalBalance:        totalBalance,
+		Income:              income,
+		Equipmet:            equip,
+		Win:                 false,
+		TimeStarted:         time.Now(),
+		TimeEnd:             nil,
+		LittleMinersHired:   0,
+		NormalMinersHired:   0,
+		PowerfulMinersHired: 0,
 	}
 }
 
@@ -67,5 +71,17 @@ func (cs *CompanyStats) GetBalance() int64 {
 }
 
 func (cs *CompanyStats) GetTotalBalance() int64 {
-	return cs.TotalBalanced.Load()
+	return cs.TotalBalance.Load()
+}
+
+func (cs *CompanyStats) GetLittleMiners() int {
+	return cs.LittleMinersHired
+}
+
+func (cs *CompanyStats) GetNormalMiners() int {
+	return cs.NormalMinersHired
+}
+
+func (cs *CompanyStats) GetPowerfulMiners() int {
+	return cs.PowerfulMinersHired
 }

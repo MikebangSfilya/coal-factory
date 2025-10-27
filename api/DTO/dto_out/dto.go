@@ -17,15 +17,21 @@ func NewResp(itemType string) DTORespItem {
 }
 
 type DTOStats struct {
-	Balance      int64
-	TotalBalance int64
-	TotalTime    string
+	Balance             int64
+	TotalBalance        int64
+	TotalTime           string
+	LittleMinersHired   int
+	NormalMinersHired   int
+	PowerfulMinersHired int
 }
 
 func DtoStatsNew(companyStats statistic.CompanyStats) DTOStats {
 	return DTOStats{
-		Balance:      companyStats.GetBalance(),
-		TotalBalance: companyStats.GetTotalBalance(),
-		TotalTime:    companyStats.TimeCompleted(),
+		Balance:             companyStats.GetBalance(),
+		TotalBalance:        companyStats.GetTotalBalance(),
+		TotalTime:           companyStats.TimeCompleted(),
+		LittleMinersHired:   companyStats.LittleMinersHired,
+		NormalMinersHired:   companyStats.NormalMinersHired,
+		PowerfulMinersHired: companyStats.PowerfulMinersHired,
 	}
 }

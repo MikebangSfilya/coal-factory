@@ -67,7 +67,6 @@ func Start(equip *equipment.Equipments) *Company {
 	return comp
 }
 
-// Возвращает мапу наших рабочих
 func (c *Company) GetMiners() map[uuid.UUID]Miners {
 	copyMap := make(map[uuid.UUID]Miners, len(c.Miners))
 	for k, v := range c.Miners {
@@ -89,7 +88,14 @@ func (c *Company) GetMiner(id string) (Miners, error) {
 	return miner, nil
 }
 
-func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
+func (c *Company) HireMiner(ctx context.Context, minerType miners.MinerType) (Miners, error) {
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -100,6 +106,7 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 		if c.Stats.Balance.Load() >= miners.LittleSalary {
 			miner = miners.NewLittleMiner()
 			c.Stats.Balance.Add(-miners.LittleSalary)
+			c.Stats.LittleMinersHired++
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
@@ -107,6 +114,7 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 		if c.Stats.Balance.Load() >= miners.NormalSalary {
 			miner = miners.NewNormalMiner()
 			c.Stats.Balance.Add(-miners.NormalSalary)
+			c.Stats.NormalMinersHired++
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
@@ -114,6 +122,7 @@ func (c *Company) HireMiner(minerType miners.MinerType) (Miners, error) {
 		if c.Stats.Balance.Load() >= miners.PowerfulSalary {
 			miner = miners.NewPowerfulMiner()
 			c.Stats.Balance.Add(-miners.PowerfulSalary)
+			c.Stats.PowerfulMinersHired++
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
@@ -165,7 +174,7 @@ func (c *Company) RaiseBalance() {
 				return
 			case val := <-c.Income:
 				c.Stats.Balance.Add(int64(val))
-				c.Stats.TotalBalanced.Add(int64(val))
+				c.Stats.TotalBalance.Add(int64(val))
 			}
 		}
 	}()
@@ -285,7 +294,6 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	return c.Stats.Equipmet, nil
 }
 
-// method for unit testing
 func (c *Company) SetBalance(balance int) {
 	c.Stats.Balance.Store(int64(balance))
 }

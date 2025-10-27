@@ -7,7 +7,9 @@ import (
 	"coalFactory/miners"
 	"coalFactory/service"
 	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -36,7 +38,7 @@ func (m *MockMiners) Info() miners.MinerInfo {
 type MockCompanyRepo struct {
 	GetMinersFunc func() map[uuid.UUID]factory.Miners
 	GetMinerFunc  func(id string) (factory.Miners, error)
-	HireMinerFunc func(minerType miners.MinerType) (factory.Miners, error)
+	HireMinerFunc func(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
 
 	GetBalanceFunc func() int
 	GetEqFunc      func() equipment.Equipments
@@ -53,9 +55,9 @@ func (m *MockCompanyRepo) GetMiner(id string) (factory.Miners, error) {
 	return nil, nil
 }
 
-func (m *MockCompanyRepo) HireMiner(minerType miners.MinerType) (factory.Miners, error) {
+func (m *MockCompanyRepo) HireMiner(ctx context.Context, minerType miners.MinerType) (factory.Miners, error) {
 	if m.HireMinerFunc != nil {
-		return m.HireMinerFunc(minerType)
+		return m.HireMinerFunc(ctx, minerType)
 	}
 	return nil, factory.ErrNotEnoughMoney
 }
@@ -112,7 +114,7 @@ func Test_HireMiner(t *testing.T) {
 
 			comp := &MockCompanyRepo{}
 
-			comp.HireMinerFunc = func(minerType miners.MinerType) (factory.Miners, error) {
+			comp.HireMinerFunc = func(ctx context.Context, minerType miners.MinerType) (factory.Miners, error) {
 				return &MockMiners{
 					InfoFunc: func() miners.MinerInfo {
 						return miners.MinerInfo{
@@ -130,9 +132,12 @@ func Test_HireMiner(t *testing.T) {
 				return tc.balance
 			}
 
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			service := service.New(comp)
 
-			miner, err := service.Hire(tc.minerType)
+			miner, err := service.Hire(ctx, tc.minerType)
 
 			if err != nil {
 				t.Fatalf("Ожидался успешный найм, но ошибка %v", err)
@@ -151,4 +156,29 @@ func Test_HireMiner(t *testing.T) {
 		})
 	}
 
+}
+
+func TestHire_ContextTimeout(t *testing.T) {
+	mockRepo := &MockCompanyRepo{
+		HireMinerFunc: func(ctx context.Context, minerType miners.MinerType) (factory.Miners, error) {
+			time.Sleep(2 * time.Second)
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				return &MockMiners{}, nil
+			}
+		},
+	}
+
+	service := service.New(mockRepo)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+
+	_, err := service.Hire(ctx, miners.MinerTypeLittle)
+
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("expected Deadline Exceeded, got: %v", err)
+	}
 }

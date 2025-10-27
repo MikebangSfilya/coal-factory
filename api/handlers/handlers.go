@@ -7,10 +7,12 @@ import (
 	"coalFactory/factory"
 	"coalFactory/factory/statistic"
 	"coalFactory/miners"
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
@@ -20,7 +22,7 @@ type HandleRepo interface {
 	//miners
 	GetMiners() map[uuid.UUID]factory.Miners
 	GetMiner(id string) (factory.Miners, error)
-	Hire(minerType miners.MinerType) (factory.Miners, error)
+	Hire(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
 	//stats
 	Balance() int
 	//items
@@ -45,6 +47,9 @@ func (handlers *Handlers) CloseServer(f func() error) {
 }
 
 func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancel := context.WithTimeout(r.Context(), 1*time.Second)
+	defer cancel()
 
 	var dtoin dto_in.DTOHireMiner
 	if err := json.NewDecoder(r.Body).Decode(&dtoin); err != nil {
@@ -78,14 +83,13 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	miner, err := h.service.Hire(miners.MinerType(dtoin.MinerType))
+	miner, err := h.service.Hire(ctx, miners.MinerType(dtoin.MinerType))
 	if err != nil {
 		slog.Error(
 			"Not enough coal for hire miner",
 			"layer", "handlers",
 			"operation", "hire",
 			"error", err,
-			"cost", miner.Info().Cost,
 		)
 		errDTO := dto_out.NewErrorDto(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
@@ -193,6 +197,7 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		if err := h.serverClose(); err != nil {
+			slog.Debug("server didn't close %v", err)
 		}
 	}()
 }
