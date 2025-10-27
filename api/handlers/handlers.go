@@ -31,6 +31,10 @@ type HandleRepo interface {
 	CheckWinGame() (statistic.CompanyStats, error)
 }
 
+const (
+	HireTimeOut = 30 * time.Second
+)
+
 type Handlers struct {
 	service     HandleRepo
 	serverClose func() error
@@ -48,7 +52,7 @@ func (handlers *Handlers) CloseServer(f func() error) {
 
 func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 
-	ctx, cancel := context.WithTimeout(r.Context(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), HireTimeOut)
 	defer cancel()
 
 	var dtoin dto_in.DTOHireMiner
@@ -70,13 +74,13 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			errDTO := dto_out.NewErrorDto(err)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
-		} else if errors.Is(err, dto_in.ErrEmptyMinerType) {
-			slog.Error("Unknow type miner text", "error", err)
+		} else if errors.Is(err, dto_in.ErrUnknowCommandMiner) {
+			slog.Error("Unknown  type miner text", "error", err)
 			errDTO := dto_out.NewErrorDto(err)
-			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
+			http.Error(w, errDTO.ToString(), http.StatusUnprocessableEntity)
 			return
 		} else {
-			slog.Error("InternalServerError", "error", err)
+			slog.Error("Internal server error", "error", err)
 			errDTO := dto_out.NewErrorDto(err)
 			http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 			return
@@ -92,7 +96,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"error", err,
 		)
 		errDTO := dto_out.NewErrorDto(err)
-		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
+		http.Error(w, errDTO.ToString(), http.StatusPaymentRequired)
 		return
 	}
 
@@ -197,12 +201,12 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		if err := h.serverClose(); err != nil {
-			slog.Debug("server didn't close %v", err)
+			slog.Debug("server close error", "error", err)
 		}
 	}()
 }
 
-// QueryParams либо в JSON файле
+// QueryParams либо в JSON теле
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 
 	var itemType string
@@ -218,10 +222,12 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 				slog.Error("The user sent wrong itemType", "error", err)
 				errDTO := dto_out.NewErrorDto(err)
 				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
+				return
 			} else {
 				slog.Error("Internal Server Error", "error", err)
 				errDTO := dto_out.NewErrorDto(err)
 				http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
+				return
 			}
 		}
 		itemType = dtoItem.ItemType
@@ -258,8 +264,8 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) ItemsInfo(w http.ResponseWriter, r *http.Request) {
-
-	if err := json.NewEncoder(w).Encode(h.service.Items()); err != nil {
+	items := h.service.Items()
+	if err := json.NewEncoder(w).Encode(items); err != nil {
 		slog.Error(
 			"failed to encode JSON",
 			"layer", "handlers",
