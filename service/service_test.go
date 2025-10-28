@@ -140,18 +140,18 @@ func Test_HireMiner(t *testing.T) {
 			miner, err := service.Hire(ctx, tc.minerType)
 
 			if err != nil {
-				t.Fatalf("Ожидался успешный найм, но ошибка %v", err)
+				t.Fatalf("Expected successful hiring, but got error: %v", err)
 			}
 
 			if miner == nil {
-				t.Fatalf("Ожидалось наличие майнера, но получили nil")
+				t.Fatalf("Expected a miner instance, but got nil")
 			}
 
 			if miner.Info().MinerType != tc.wantMinerType {
-				t.Errorf("Ожидалось что майнер %s, но получили %s", tc.wantMinerType, miner.Info().MinerType)
+				t.Errorf("Expected miner type %s, but got %s", tc.wantMinerType, miner.Info().MinerType)
 			}
 
-			t.Log("Проверки прошли успешно")
+			t.Log("All checks passed successfully")
 
 		})
 	}

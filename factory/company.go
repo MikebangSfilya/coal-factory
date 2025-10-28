@@ -83,7 +83,7 @@ func (c *Company) GetMiner(id string) (Miners, error) {
 
 	miner, ok := c.Miners[iduuid]
 	if !ok {
-		return nil, ErrMinerMotExist
+		return nil, ErrMinerNotExist
 	}
 	return miner, nil
 }
@@ -136,7 +136,7 @@ func (c *Company) HireMiner(ctx context.Context, minerType miners.MinerType) (Mi
 }
 
 func (c *Company) StartMiner(miner Miners) {
-	coalTranserPoint := miner.Run(context.Background())
+	coalTranserPoint := miner.Run(c.CompanyContext)
 	go func() {
 		slog.Info(
 			"start miner job",
@@ -161,7 +161,9 @@ func (c *Company) StartMiner(miner Miners) {
 		for val := range coalTranserPoint {
 			c.Income <- val
 		}
+		c.mu.Lock()
 		delete(c.Miners, miner.Info().ID)
+		c.mu.Unlock()
 	}()
 }
 
@@ -209,11 +211,16 @@ func (c *Company) GetBalance() int {
 
 func (c *Company) ShowIncome() {
 	for {
-		c.mu.RLock()
-		b := c.Stats.Income
-		log.Println(b.Load())
-		time.Sleep(1 * time.Second)
-		c.mu.RUnlock()
+		select {
+		case <-c.CompanyContext.Done():
+			return
+		default:
+			c.mu.RLock()
+			b := c.Stats.Income
+			log.Println(b.Load())
+			c.mu.RUnlock()
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
 
@@ -242,13 +249,13 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	case pick:
 		if c.Stats.Balance.Load() >= int64(equipment.PickCost) {
 			slog.Info(
-				"equipment purchared",
+				"equipment purchased",
 				"layer", "company",
 				"operation", "buy",
 				"item", pick,
 				"cost", equipment.PickCost,
 			)
-			c.Stats.Equipmet.Buy(pick)
+			c.Stats.Equipment.Buy(pick)
 			c.Stats.Balance.Add(-int64(equipment.PickCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -256,13 +263,13 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	case vent:
 		if c.Stats.Balance.Load() >= int64(equipment.VentCost) {
 			slog.Info(
-				"equipment purchared",
+				"equipment purchased",
 				"layer", "company",
 				"operation", "buy",
 				"item", vent,
 				"cost", equipment.VentCost,
 			)
-			c.Stats.Equipmet.Buy(vent)
+			c.Stats.Equipment.Buy(vent)
 			c.Stats.Balance.Add(-int64(equipment.VentCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -270,28 +277,28 @@ func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
 	case trolley:
 		if c.Stats.Balance.Load() >= int64(equipment.TrolleyCost) {
 			slog.Info(
-				"equipment purchared",
+				"equipment purchased",
 				"layer", "company",
 				"operation", "buy",
 				"item", trolley,
 				"cost", equipment.TrolleyCost,
 			)
-			c.Stats.Equipmet.Buy(trolley)
+			c.Stats.Equipment.Buy(trolley)
 			c.Stats.Balance.Add(-int64(equipment.TrolleyCost))
 		} else {
 			return nil, ErrNotEnoughMoney
 		}
 	default:
 		slog.Warn(
-			"Uncnown itemType",
+			"unknown itemType",
 			"layer", "company",
 			"operation", "buy",
-			"item", "unknow",
+			"item", "unknown",
 			"cost", "-1",
 		)
 		return nil, errors.New("unknown item type: " + itemType)
 	}
-	return c.Stats.Equipmet, nil
+	return c.Stats.Equipment, nil
 }
 
 func (c *Company) SetBalance(balance int) {

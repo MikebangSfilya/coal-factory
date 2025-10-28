@@ -7,9 +7,9 @@ import (
 
 func TestAllBuy(t *testing.T) {
 
-	eq := equipment.NewEquipmet()
+	eq := equipment.NewEquipment()
 
-	eq1 := equipment.NewEquipmet()
+	eq1 := equipment.NewEquipment()
 
 	_, err := eq.Buy("pick")
 	if err != nil {

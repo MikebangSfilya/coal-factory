@@ -42,7 +42,7 @@ func NewPowerfulMiner() *PowerfulMiner {
 
 func (m *PowerfulMiner) Run(ctx context.Context) <-chan Coal {
 
-	const increaceIncome = 3
+	const increaseIncome = 3
 
 	transferPoint := make(chan Coal)
 
@@ -61,7 +61,7 @@ func (m *PowerfulMiner) Run(ctx context.Context) <-chan Coal {
 			case transferPoint <- Coal(m.CoalIncome.Load()):
 				m.Energy.Add(-1)
 			}
-			m.CoalIncome.Add(increaceIncome)
+			m.CoalIncome.Add(increaseIncome)
 		}
 
 	}()

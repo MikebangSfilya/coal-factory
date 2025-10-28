@@ -11,7 +11,7 @@ type CompanyStats struct {
 	Balance             *atomic.Int64
 	TotalBalance        *atomic.Int64
 	Income              *atomic.Int64
-	Equipmet            *equipment.Equipments
+	Equipment           *equipment.Equipments
 	Win                 bool
 	TimeStarted         time.Time
 	TimeEnd             *time.Time
@@ -30,7 +30,7 @@ func New(equip *equipment.Equipments) *CompanyStats {
 		Balance:             Balance,
 		TotalBalance:        totalBalance,
 		Income:              income,
-		Equipmet:            equip,
+		Equipment:           equip,
 		Win:                 false,
 		TimeStarted:         time.Now(),
 		TimeEnd:             nil,
@@ -42,7 +42,7 @@ func New(equip *equipment.Equipments) *CompanyStats {
 
 // Проверяет выигрышь если все куплено. Если все куплено отмечает время победы
 func (cs *CompanyStats) CheckWinGame() (bool, error) {
-	if !cs.Equipmet.AllBuyed() {
+	if !cs.Equipment.AllBuyed() {
 		slog.Info("The user checked the victory, the victory was not achieved.", "INFO", errNotWin)
 		return false, errNotWin
 	}
@@ -55,7 +55,7 @@ func (cs *CompanyStats) CheckWinGame() (bool, error) {
 }
 
 func (cs *CompanyStats) CheckEquipment() *equipment.Equipments {
-	return cs.Equipmet
+	return cs.Equipment
 }
 
 func (cs *CompanyStats) TimeCompleted() string {

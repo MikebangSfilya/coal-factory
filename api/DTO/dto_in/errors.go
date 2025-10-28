@@ -3,9 +3,9 @@ package dto_in
 import "fmt"
 
 var (
-	ErrEmptyMinerType     = fmt.Errorf("empty MinerType")
-	ErrUnknowCommandMiner = fmt.Errorf("unknow MinerType")
+	ErrEmptyMinerType      = fmt.Errorf("empty MinerType")
+	ErrUnknownCommandMiner = fmt.Errorf("unknown MinerType")
 
-	ErrUnknowCommandItem = fmt.Errorf("unknow ItemType")
-	ErrEmptyItemType     = fmt.Errorf("empty ItemType")
+	ErrUnknownCommandItem = fmt.Errorf("unknown ItemType")
+	ErrEmptyItemType      = fmt.Errorf("empty ItemType")
 )

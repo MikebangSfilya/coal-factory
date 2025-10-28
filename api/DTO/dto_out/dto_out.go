@@ -6,10 +6,10 @@ import (
 
 type DTORespItem struct {
 	Status string `json:"status"`
-	Item   string `json:"Item"`
+	Item   string `json:"item"`
 }
 
-func NewResp(itemType string) DTORespItem {
+func NewDTORespItem(itemType string) DTORespItem {
 	return DTORespItem{
 		Status: "purchased",
 		Item:   itemType,
@@ -25,7 +25,7 @@ type DTOStats struct {
 	PowerfulMinersHired int
 }
 
-func DtoStatsNew(companyStats statistic.CompanyStats) DTOStats {
+func NewDTOStats(companyStats statistic.CompanyStats) DTOStats {
 	return DTOStats{
 		Balance:             companyStats.GetBalance(),
 		TotalBalance:        companyStats.GetTotalBalance(),

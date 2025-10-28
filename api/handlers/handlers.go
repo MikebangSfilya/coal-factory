@@ -63,7 +63,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"operation", "decode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -71,17 +71,17 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 	if err := dtoin.Validate(); err != nil {
 		if errors.Is(err, dto_in.ErrEmptyMinerType) {
 			slog.Error("Empty type miner text", "error", err)
-			errDTO := dto_out.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDTO(err)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
-		} else if errors.Is(err, dto_in.ErrUnknowCommandMiner) {
+		} else if errors.Is(err, dto_in.ErrUnknownCommandMiner) {
 			slog.Error("Unknown  type miner text", "error", err)
-			errDTO := dto_out.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDTO(err)
 			http.Error(w, errDTO.ToString(), http.StatusUnprocessableEntity)
 			return
 		} else {
 			slog.Error("Internal server error", "error", err)
-			errDTO := dto_out.NewErrorDto(err)
+			errDTO := dto_out.NewErrorDTO(err)
 			http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 			return
 		}
@@ -95,7 +95,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"operation", "hire",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusPaymentRequired)
 		return
 	}
@@ -107,7 +107,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -129,7 +129,7 @@ func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -141,7 +141,7 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 
 	miner, err := h.service.GetMiner(id)
 	if err != nil {
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
@@ -153,7 +153,7 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -169,7 +169,7 @@ func (h *Handlers) GetBal(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -180,12 +180,12 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 	stats, err := h.service.CheckWinGame()
 	if err != nil {
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusPreconditionFailed)
 		return
 	}
 
-	dtoStats := dto_out.DtoStatsNew(stats)
+	dtoStats := dto_out.NewDTOStats(stats)
 
 	if err := json.NewEncoder(w).Encode(dtoStats); err != nil {
 		slog.Error(
@@ -194,7 +194,7 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -210,22 +210,22 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 
 	var itemType string
-	var dtoItem dto_in.DTORBuyItem
+	var dtoItem dto_in.DTOBuyItem
 	if err := json.NewDecoder(r.Body).Decode(&dtoItem); err == nil {
 		if err := dtoItem.Validate(); err != nil {
 			if errors.Is(err, dto_in.ErrEmptyItemType) {
 				slog.Error("The user sent an empty json", "error", err)
-				errDTO := dto_out.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDTO(err)
 				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 				return
-			} else if errors.Is(err, dto_in.ErrUnknowCommandItem) {
+			} else if errors.Is(err, dto_in.ErrUnknownCommandItem) {
 				slog.Error("The user sent wrong itemType", "error", err)
-				errDTO := dto_out.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDTO(err)
 				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 				return
 			} else {
 				slog.Error("Internal Server Error", "error", err)
-				errDTO := dto_out.NewErrorDto(err)
+				errDTO := dto_out.NewErrorDTO(err)
 				http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 				return
 			}
@@ -235,7 +235,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 		itemType = r.URL.Query().Get("item")
 		if itemType == "" {
 			slog.Error("No item specified in JSON or query")
-			errDTO := dto_out.NewErrorDto(ErrCannotParse)
+			errDTO := dto_out.NewErrorDTO(ErrCannotParse)
 			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 			return
 		}
@@ -243,11 +243,11 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 	_, err := h.service.Buy(itemType)
 	if err != nil {
 		slog.Error("Cant buy")
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
-	dtoResp := dto_out.NewResp(itemType)
+	dtoResp := dto_out.NewDTORespItem(itemType)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(dtoResp); err != nil {
 		slog.Error(
@@ -256,7 +256,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 		return
 	}
@@ -272,7 +272,7 @@ func (h *Handlers) ItemsInfo(w http.ResponseWriter, r *http.Request) {
 			"operation", "encode",
 			"error", err,
 		)
-		errDTO := dto_out.NewErrorDto(err)
+		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
 	}
 }

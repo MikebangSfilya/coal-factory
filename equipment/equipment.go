@@ -32,7 +32,7 @@ type Equipments struct {
 	AllBuy  bool
 }
 
-func NewEquipmet() *Equipments {
+func NewEquipment() *Equipments {
 
 	pick := Pick{Cost: PickCost}
 	vent := Vent{Cost: VentCost}

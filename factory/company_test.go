@@ -12,7 +12,7 @@ func TestPassiveIncome(t *testing.T) {
 
 	t.Run("passive", func(t *testing.T) {
 
-		eq := equipment.NewEquipmet()
+		eq := equipment.NewEquipment()
 
 		var incomes []int64
 
@@ -22,18 +22,18 @@ func TestPassiveIncome(t *testing.T) {
 			select {
 			case coal := <-comp.Income:
 				if coal == 0 {
-					t.Errorf("ожидалось получение значений")
+					t.Errorf("expected to receive values")
 				}
 				incomes = append(incomes, int64(coal))
 			case <-time.After(2 * time.Second):
-				t.Errorf("доход не идет слишком долго")
+				t.Errorf("income is taking too long")
 
 			}
 		}
 
 		for _, v := range incomes {
 			if v != 1 {
-				t.Errorf("значение выше базового дохода")
+				t.Errorf("value exceeds base income")
 			}
 		}
 

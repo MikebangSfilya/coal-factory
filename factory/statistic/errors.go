@@ -3,5 +3,5 @@ package statistic
 import "errors"
 
 var (
-	errNotWin = errors.New("dont have all Equipments")
+	errNotWin = errors.New("don't have all Equipments")
 )

@@ -20,7 +20,7 @@ func main() {
 
 	equipment.Init(cfg) //для тестирования, в будущем скорее всего уберу
 
-	equip := equipment.NewEquipmet()
+	equip := equipment.NewEquipment()
 
 	company := factory.Start(equip)
 

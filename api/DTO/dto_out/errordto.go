@@ -20,7 +20,7 @@ func (e ErrorResponse) ToString() string {
 	return string(b)
 }
 
-func NewErrorDto(err error) ErrorResponse {
+func NewErrorDTO(err error) ErrorResponse {
 	res := ErrorResponse{
 		Error: err.Error(),
 		Time:  time.Now(),

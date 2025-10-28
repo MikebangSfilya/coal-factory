@@ -33,26 +33,15 @@ func New(company CompanyRepo) *GameService {
 }
 
 func (gs *GameService) GetMiners() map[uuid.UUID]factory.Miners {
-	miners := gs.comp.GetMiners()
-	return miners
+	return gs.comp.GetMiners()
 }
 
 func (gs *GameService) GetMiner(id string) (factory.Miners, error) {
-	miner, err := gs.comp.GetMiner(id)
-	if err != nil {
-		return nil, err
-	}
-	return miner, nil
+	return gs.comp.GetMiner(id)
 }
 
 func (gs *GameService) Hire(ctx context.Context, minerType miners.MinerType) (factory.Miners, error) {
-
-	miner, err := gs.comp.HireMiner(ctx, minerType)
-	if err != nil {
-		return nil, err
-	}
-
-	return miner, nil
+	return gs.comp.HireMiner(ctx, minerType)
 }
 
 func (gs *GameService) Balance() int {
@@ -60,22 +49,13 @@ func (gs *GameService) Balance() int {
 }
 
 func (gs *GameService) CheckWinGame() (statistic.CompanyStats, error) {
-	statistic, err := gs.comp.WinGame()
-	if err != nil {
-		return statistic, err
-	}
-	return statistic, nil
+	return gs.comp.WinGame()
 }
 
 func (gs *GameService) Buy(item string) (*equipment.Equipments, error) {
-	miner, err := gs.comp.Buy(item)
-	if err != nil {
-		return nil, err
-	}
-	return miner, nil
+	return gs.comp.Buy(item)
 }
 
 func (gs *GameService) Items() equipment.Equipments {
-	b := gs.comp.GetEq()
-	return b
+	return gs.comp.GetEq()
 }

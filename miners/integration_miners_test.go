@@ -16,22 +16,22 @@ func Test_PowerfulMiner_Integration(t *testing.T) {
 
 	ch := miner.Run(ctx)
 
-	var Coals []miners.Coal
+	var coals []miners.Coal
 
 	for i := 0; i < 3; i++ {
 		select {
 		case coal := <-ch:
-			Coals = append(Coals, coal)
-			t.Logf("Итерация сбора угля %d: %d угля собрано", i+1, coal)
+			coals = append(coals, coal)
+			t.Logf("Coal collection iteration %d: %d coal collected", i+1, coal)
 		case <-time.After(5 * time.Second):
-			t.Errorf("Уголь не собирается уже долгое время")
+			t.Errorf("Coal has not been collected for a long time")
 		}
 	}
 
 	expected := []miners.Coal{10, 13, 16}
-	for i := 0; i < len(Coals); i++ {
-		if Coals[i] != expected[i] {
-			t.Errorf("Количество угля не совпадает, ожидалось %d, получено %d", expected[i], Coals[i])
+	for i := 0; i < len(coals); i++ {
+		if coals[i] != expected[i] {
+			t.Errorf("Coal amount mismatch, expected %d, got %d", expected[i], coals[i])
 		}
 	}
 
@@ -45,34 +45,30 @@ func TestRunMiners_Integration(t *testing.T) {
 		miner     factory.Miners
 		coal      int64
 		timeSleep time.Duration
-		energy    int
 	}{
 		{
 			name:      "Testing little miner",
 			miner:     miners.NewLittleMiner(),
 			coal:      1,
 			timeSleep: 3*time.Second + deltaStart,
-			energy:    1,
 		},
 		{
 			name:      "Testing normal miner",
 			miner:     miners.NewNormalMiner(),
 			coal:      3,
 			timeSleep: 2*time.Second + deltaStart,
-			energy:    1,
 		},
 		{
 			name:      "Testing powerful miner",
 			miner:     miners.NewPowerfulMiner(),
 			coal:      10,
 			timeSleep: 1*time.Second + deltaStart,
-			energy:    1,
 		},
 	}
 
 	for _, tc := range testCases {
 
-		t.Run(t.Name(), func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
 			defer cancel()
@@ -81,10 +77,10 @@ func TestRunMiners_Integration(t *testing.T) {
 			select {
 			case coal := <-testChan:
 				if coal != miners.Coal(tc.coal) {
-					t.Errorf("Ожидалось получение %d, было получено %d", tc.coal, coal)
+					t.Errorf("Expected to receive %d, but got %d", tc.coal, coal)
 				}
 			case <-time.After(tc.timeSleep + 1*time.Second):
-				t.Errorf("Майнер не добывает уголь слишком долго")
+				t.Errorf("Miner is taking too long to produce coal")
 			}
 		})
 	}
@@ -102,10 +98,10 @@ func TestRunMiners_Integration(t *testing.T) {
 			select {
 			case _, ok := <-ch:
 				if ok {
-					t.Errorf("канал должен был быть закрыт после отмены контекста")
+					t.Errorf("Channel should have been closed after context cancellation")
 				}
 			case <-time.After(1 * time.Second):
-				t.Errorf("канал не закрыт спустя 1 секунду")
+				t.Errorf("Channel was not closed within 1 second")
 			}
 		})
 	}

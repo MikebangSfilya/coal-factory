@@ -2,7 +2,6 @@ package miners
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"sync/atomic"
 	"time"
@@ -52,7 +51,7 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 		for m.Energy.Load() > 0 {
 			select {
 			case <-ctx.Done():
-				slog.Info("Contex stopped", "contex", ctx)
+				slog.Info("Context stopped", "Context", ctx)
 				return
 			case <-time.After(m.SleepDuration):
 
@@ -63,10 +62,6 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 			case transferPoint <- Coal(m.CoalIncome.Load()):
 				m.Energy.Add(-1)
 			}
-		}
-
-		if m.Energy.Load() == 0 {
-			log.Printf("Работник %d окончил", m.Id)
 		}
 
 	}()

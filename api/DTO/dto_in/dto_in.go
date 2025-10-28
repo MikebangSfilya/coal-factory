@@ -17,16 +17,16 @@ func (v *DTOHireMiner) Validate() error {
 	case miners.MinerTypeLittle, miners.MinerTypeNormal, miners.MinerTypePowerful:
 		return nil
 	default:
-		return ErrEmptyMinerType
+		return ErrUnknownCommandMiner
 	}
 
 }
 
-type DTORBuyItem struct {
+type DTOBuyItem struct {
 	ItemType string `json:"item_type"`
 }
 
-func (v *DTORBuyItem) Validate() error {
+func (v *DTOBuyItem) Validate() error {
 	if v.ItemType == "" {
 		return ErrEmptyItemType
 	}
@@ -34,7 +34,7 @@ func (v *DTORBuyItem) Validate() error {
 	case equipment.PickType, equipment.TrolleyType, equipment.VentType:
 		return nil
 	default:
-		return ErrEmptyItemType
+		return ErrUnknownCommandItem
 	}
 
 }
