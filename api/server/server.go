@@ -40,11 +40,11 @@ func (s *Server) Start() error {
 	r.Get("/miners/{id}", s.handlers.GetInfoMiner)
 	r.Get("/miners", s.handlers.GetMiners)
 
-	r.Get("/miners/balance", s.handlers.GetBal)
-	r.Get("/miners/win", s.handlers.CheckWin)
+	r.Get("/balance", s.handlers.GetBal)
+	r.Get("/win", s.handlers.CheckWin)
 
-	r.Post("/miners/items", s.handlers.BuyItem)
-	r.Get("/miners/items", s.handlers.ItemsInfo)
+	r.Post("/items/{type}", s.handlers.BuyItem)
+	r.Get("/items", s.handlers.ItemsInfo)
 
 	s.server = &http.Server{
 		Addr:    ":9091",

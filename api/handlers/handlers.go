@@ -209,46 +209,22 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 // QueryParams либо в JSON теле
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 
-	var itemType string
-	var dtoItem dto_in.DTOBuyItem
-	if err := json.NewDecoder(r.Body).Decode(&dtoItem); err == nil {
-		if err := dtoItem.Validate(); err != nil {
-			if errors.Is(err, dto_in.ErrEmptyItemType) {
-				slog.Error("The user sent an empty json", "error", err)
-				errDTO := dto_out.NewErrorDTO(err)
-				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
-				return
-			} else if errors.Is(err, dto_in.ErrUnknownCommandItem) {
-				slog.Error("The user sent wrong itemType", "error", err)
-				errDTO := dto_out.NewErrorDTO(err)
-				http.Error(w, errDTO.ToString(), http.StatusBadRequest)
-				return
-			} else {
-				slog.Error("Internal Server Error", "error", err)
-				errDTO := dto_out.NewErrorDTO(err)
-				http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
-				return
-			}
-		}
-		itemType = dtoItem.ItemType
-	} else {
-		itemType = r.URL.Query().Get("item")
-		if itemType == "" {
-			slog.Error("No item specified in JSON or query")
-			errDTO := dto_out.NewErrorDTO(ErrCannotParse)
-			http.Error(w, errDTO.ToString(), http.StatusBadRequest)
-			return
-		}
-	}
+	itemType := chi.URLParam(r, "type")
+
 	_, err := h.service.Buy(itemType)
 	if err != nil {
-		slog.Error("Cant buy")
 		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
 	}
+
+	slog.Info("Item purchased successfully",
+		"layer", "handlers",
+		"operation", "buy",
+		"itemType", itemType)
+
 	dtoResp := dto_out.NewDTORespItem(itemType)
-	w.WriteHeader(http.StatusOK)
+
 	if err := json.NewEncoder(w).Encode(dtoResp); err != nil {
 		slog.Error(
 			"failed to encode JSON",
