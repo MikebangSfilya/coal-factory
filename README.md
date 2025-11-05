@@ -69,13 +69,13 @@ POST /miners
 
 ``` bash
 # Купить кирку
-POST /equipment/pick
+POST /equipment/{pick}
 
 # Купить вентиляцию  
-POST /equipment/vent
+POST /equipment/{vent}
 
 # Купить вагонетку
-POST /equipment/trolley
+POST /equipment/{trolley}
 ```
 
 ### Победа
