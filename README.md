@@ -24,8 +24,8 @@ cd coal-factory
 # Запуск сервера
 go run ./main.go
 
-# Сервер слушает на :9091
-curl http://localhost:9091/miners
+# Сервер слушает на :8080
+curl http://localhost:8080/miners
 ```
 
 ### Запуск тестового интерфейса (опционально)
