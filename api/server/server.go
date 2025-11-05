@@ -36,6 +36,23 @@ func New(handlers HTTPRepo) *Server {
 
 func (s *Server) Start() error {
 	r := chi.NewRouter()
+
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	r.Post("/miners", s.handlers.Hire)
 	r.Get("/miners/{id}", s.handlers.GetInfoMiner)
 	r.Get("/miners", s.handlers.GetMiners)
@@ -47,7 +64,7 @@ func (s *Server) Start() error {
 	r.Get("/items", s.handlers.ItemsInfo)
 
 	s.server = &http.Server{
-		Addr:    ":9091",
+		Addr:    ":8080",
 		Handler: r,
 	}
 
