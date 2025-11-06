@@ -13,6 +13,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,6 +22,10 @@ func main() {
 	// the application is listening for the SIGTERM signal to exit
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	if err := godotenv.Load(); err != nil {
+		log.Printf(".env not found: %v", err)
+	}
 
 	cfg := config.Load()
 
