@@ -36,22 +36,22 @@ func (m *MockMiners) Info() miners.MinerInfo {
 }
 
 type MockCompanyRepo struct {
-	GetMinersFunc func() map[uuid.UUID]factory.Miners
-	GetMinerFunc  func(id string) (factory.Miners, error)
+	GetMinersFunc func(ctx context.Context) map[uuid.UUID]factory.Miners
+	GetMinerFunc  func(ctx context.Context, id string) (factory.Miners, error)
 	HireMinerFunc func(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
 
-	GetBalanceFunc func() int
-	GetEqFunc      func() equipment.Equipments
+	GetBalanceFunc func(ctx context.Context) int
+	GetEqFunc      func(ctx context.Context) equipment.Equipments
 
-	WinGameFunc func() (statistic.CompanyStats, error)
-	BuyFunc     func(itemType string) (*equipment.Equipments, error)
+	WinGameFunc func(ctx context.Context) (statistic.CompanyStats, error)
+	BuyFunc     func(ctx context.Context, itemType string) (*equipment.Equipments, error)
 }
 
-func (m *MockCompanyRepo) GetMiners() map[uuid.UUID]factory.Miners {
+func (m *MockCompanyRepo) GetMiners(ctx context.Context) map[uuid.UUID]factory.Miners {
 	return map[uuid.UUID]factory.Miners{}
 }
 
-func (m *MockCompanyRepo) GetMiner(id string) (factory.Miners, error) {
+func (m *MockCompanyRepo) GetMiner(ctx context.Context, id string) (factory.Miners, error) {
 	return nil, nil
 }
 
@@ -62,22 +62,22 @@ func (m *MockCompanyRepo) HireMiner(ctx context.Context, minerType miners.MinerT
 	return nil, factory.ErrNotEnoughMoney
 }
 
-func (m *MockCompanyRepo) GetBalance() int {
+func (m *MockCompanyRepo) GetBalance(ctx context.Context) int {
 	if m.GetBalanceFunc != nil {
-		return m.GetBalanceFunc()
+		return m.GetBalanceFunc(ctx)
 	}
 	return 0
 }
 
-func (m *MockCompanyRepo) GetEq() equipment.Equipments {
+func (m *MockCompanyRepo) GetEq(ctx context.Context) equipment.Equipments {
 	return equipment.Equipments{}
 }
 
-func (m *MockCompanyRepo) WinGame() (statistic.CompanyStats, error) {
+func (m *MockCompanyRepo) WinGame(ctx context.Context) (statistic.CompanyStats, error) {
 	return statistic.CompanyStats{}, nil
 }
 
-func (m *MockCompanyRepo) Buy(itemType string) (*equipment.Equipments, error) {
+func (m *MockCompanyRepo) Buy(ctx context.Context, itemType string) (*equipment.Equipments, error) {
 	return nil, nil
 }
 
@@ -128,7 +128,7 @@ func Test_HireMiner(t *testing.T) {
 				}, nil
 			}
 
-			comp.GetBalanceFunc = func() int {
+			comp.GetBalanceFunc = func(ctx context.Context) int {
 				return tc.balance
 			}
 

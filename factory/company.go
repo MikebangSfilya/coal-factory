@@ -54,8 +54,8 @@ func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
 	}
 }
 
-func Start(equip *equipment.Equipments) *Company {
-	comp := NewCompany(context.Background(), equip)
+func Start(ctx context.Context, equip *equipment.Equipments) *Company {
+	comp := NewCompany(ctx, equip)
 	go comp.PassiveIncome()
 	go comp.RaiseBalance()
 	go comp.ShowIncome()
@@ -67,7 +67,7 @@ func Start(equip *equipment.Equipments) *Company {
 	return comp
 }
 
-func (c *Company) GetMiners() map[uuid.UUID]Miners {
+func (c *Company) GetMiners(ctx context.Context) map[uuid.UUID]Miners {
 	copyMap := make(map[uuid.UUID]Miners, len(c.Miners))
 	for k, v := range c.Miners {
 		copyMap[k] = v
@@ -75,7 +75,7 @@ func (c *Company) GetMiners() map[uuid.UUID]Miners {
 	return copyMap
 }
 
-func (c *Company) GetMiner(id string) (Miners, error) {
+func (c *Company) GetMiner(ctx context.Context, id string) (Miners, error) {
 	iduuid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -203,7 +203,7 @@ func (c *Company) PassiveIncome() {
 	}
 }
 
-func (c *Company) GetBalance() int {
+func (c *Company) GetBalance(ctx context.Context) int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return int(c.Stats.Balance.Load())
@@ -224,7 +224,7 @@ func (c *Company) ShowIncome() {
 	}
 }
 
-func (c *Company) WinGame() (statistic.CompanyStats, error) {
+func (c *Company) WinGame(ctx context.Context) (statistic.CompanyStats, error) {
 	win, err := c.Stats.CheckWinGame()
 	if err != nil {
 		return statistic.CompanyStats{}, err
@@ -236,11 +236,11 @@ func (c *Company) WinGame() (statistic.CompanyStats, error) {
 	return *c.Stats, nil
 }
 
-func (c *Company) GetEq() equipment.Equipments {
+func (c *Company) GetEq(ctx context.Context) equipment.Equipments {
 	return *c.Stats.CheckEquipment()
 }
 
-func (c *Company) Buy(itemType string) (*equipment.Equipments, error) {
+func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipments, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

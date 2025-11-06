@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -22,11 +23,11 @@ func main() {
 
 	cfg := config.Load()
 
-	equipment.Init(cfg) //для тестирования, в будущем скорее всего уберу
+	equipment.Init(cfg)
 
 	equip := equipment.NewEquipment()
 
-	company := factory.Start(equip)
+	company := factory.Start(ctx, equip)
 
 	service := service.New(company)
 
@@ -34,15 +35,33 @@ func main() {
 
 	server := server.New(handl)
 
+	errChan := make(chan error, 1)
 	go func() {
 		if err := server.Start(); err != nil {
 			log.Print("Server error:", err)
+			errChan <- err
 		}
 	}()
 
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+		log.Println("recived shotdown signal")
+	case err := <-errChan:
+		if err != nil {
+			log.Printf("Server error: %v", err)
+		}
+	}
 
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	log.Println("Shutting down gracefully...")
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("HTTP server shutdown error: %v", err)
+	}
 	company.CompanyStop()
 
-	println("Shutting down gracefully...")
+	log.Print("Shutdown end")
+
 }

@@ -20,19 +20,20 @@ import (
 
 type HandleRepo interface {
 	//miners
-	GetMiners() map[uuid.UUID]factory.Miners
-	GetMiner(id string) (factory.Miners, error)
+	GetMiners(ctx context.Context) map[uuid.UUID]factory.Miners
+	GetMiner(ctx context.Context, id string) (factory.Miners, error)
 	Hire(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
 	//stats
-	Balance() int
+	Balance(ctx context.Context) int
 	//items
-	Buy(item string) (*equipment.Equipments, error)
-	Items() equipment.Equipments
-	CheckWinGame() (statistic.CompanyStats, error)
+	Buy(ctx context.Context, item string) (*equipment.Equipments, error)
+	Items(ctx context.Context) equipment.Equipments
+	CheckWinGame(ctx context.Context) (statistic.CompanyStats, error)
 }
 
 const (
-	HireTimeOut = 30 * time.Second
+	HireTimeOut   = 30 * time.Second
+	NormalTimeOut = 10 * time.Second
 )
 
 type Handlers struct {
@@ -115,7 +116,11 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
-	minersMap := h.service.GetMiners()
+
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
+
+	minersMap := h.service.GetMiners(ctx)
 
 	result := make(map[string]miners.MinerInfo, len(minersMap)) // TODO перенести в сервисный слой обработку
 	for id, miner := range minersMap {
@@ -137,9 +142,12 @@ func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
+
 	id := chi.URLParam(r, "id")
 
-	miner, err := h.service.GetMiner(id)
+	miner, err := h.service.GetMiner(ctx, id)
 	if err != nil {
 		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
@@ -161,8 +169,10 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetBal(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
 
-	if err := json.NewEncoder(w).Encode(h.service.Balance()); err != nil {
+	if err := json.NewEncoder(w).Encode(h.service.Balance(ctx)); err != nil {
 		slog.Error(
 			"failed to encode JSON",
 			"layer", "handlers",
@@ -177,8 +187,10 @@ func (h *Handlers) GetBal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
 
-	stats, err := h.service.CheckWinGame()
+	stats, err := h.service.CheckWinGame(ctx)
 	if err != nil {
 		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusPreconditionFailed)
@@ -208,10 +220,12 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 
 // QueryParams либо в JSON теле
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
 
 	itemType := chi.URLParam(r, "type")
 
-	_, err := h.service.Buy(itemType)
+	_, err := h.service.Buy(ctx, itemType)
 	if err != nil {
 		errDTO := dto_out.NewErrorDTO(err)
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
@@ -240,7 +254,10 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) ItemsInfo(w http.ResponseWriter, r *http.Request) {
-	items := h.service.Items()
+	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+	defer cancel()
+
+	items := h.service.Items(ctx)
 	if err := json.NewEncoder(w).Encode(items); err != nil {
 		slog.Error(
 			"failed to encode JSON",
