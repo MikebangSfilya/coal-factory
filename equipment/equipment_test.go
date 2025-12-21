@@ -28,11 +28,11 @@ func TestAllBuy(t *testing.T) {
 		t.Errorf("dragon не была куплена %v", err)
 	}
 
-	if eq1.AllBuyed() {
+	if eq1.AllBought() {
 		t.Errorf("оборудование не было куплено")
 	}
 
-	if !eq.AllBuyed() {
+	if !eq.AllBought() {
 		t.Errorf("оборудование не было куплено")
 	}
 

@@ -5,13 +5,13 @@ import (
 	"strconv"
 )
 
-type Configurate struct {
+type Configuration struct {
 	PickCost    int
 	VentCost    int
 	TrolleyCost int
 }
 
-func Load() *Configurate {
+func Load() *Configuration {
 	pickCost := os.Getenv("PICK_COST")
 	ventCost := os.Getenv("VENT_COST")
 	trolleyCost := os.Getenv("TROLLEY_COST")
@@ -20,7 +20,7 @@ func Load() *Configurate {
 	ventCostInt, _ := strconv.Atoi(ventCost)
 	trolleyCostInt, _ := strconv.Atoi(trolleyCost)
 
-	return &Configurate{
+	return &Configuration{
 		PickCost:    pickCostInt,
 		VentCost:    ventCostInt,
 		TrolleyCost: trolleyCostInt,

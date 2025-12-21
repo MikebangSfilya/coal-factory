@@ -35,15 +35,15 @@ func main() {
 
 	company := factory.Start(ctx, equip)
 
-	service := service.New(company)
+	gameService := service.New(company)
 
-	handl := handlers.New(service)
+	handle := handlers.New(gameService)
 
-	server := server.New(handl)
+	srv := server.New(handle)
 
 	errChan := make(chan error, 1)
 	go func() {
-		if err := server.Start(); err != nil {
+		if err := srv.Start(); err != nil {
 			log.Print("Server error:", err)
 			errChan <- err
 		}
@@ -51,7 +51,7 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		log.Println("recived shotdown signal")
+		log.Println("received shutdown signal")
 	case err := <-errChan:
 		if err != nil {
 			log.Printf("Server error: %v", err)
@@ -63,8 +63,8 @@ func main() {
 
 	log.Println("Shutting down gracefully...")
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("HTTP server shutdown error: %v", err)
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("HTTP srv shutdown error: %v", err)
 	}
 	company.CompanyStop()
 

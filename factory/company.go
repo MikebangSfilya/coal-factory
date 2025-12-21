@@ -76,12 +76,12 @@ func (c *Company) GetMiners(ctx context.Context) map[uuid.UUID]Miners {
 }
 
 func (c *Company) GetMiner(ctx context.Context, id string) (Miners, error) {
-	iduuid, err := uuid.Parse(id)
+	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	miner, ok := c.Miners[iduuid]
+	miner, ok := c.Miners[uuid]
 	if !ok {
 		return nil, ErrMinerNotExist
 	}
@@ -136,7 +136,7 @@ func (c *Company) HireMiner(ctx context.Context, minerType miners.MinerType) (Mi
 }
 
 func (c *Company) StartMiner(miner Miners) {
-	coalTranserPoint := miner.Run(c.CompanyContext)
+	coalTransferPoint := miner.Run(c.CompanyContext)
 	go func() {
 		slog.Info(
 			"start miner job",
@@ -158,7 +158,7 @@ func (c *Company) StartMiner(miner Miners) {
 			)
 		}()
 
-		for val := range coalTranserPoint {
+		for val := range coalTransferPoint {
 			c.Income <- val
 		}
 		c.mu.Lock()
@@ -244,8 +244,8 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	itemTypelow := strings.ToLower(itemType)
-	switch itemTypelow {
+	itemTypeLower := strings.ToLower(itemType)
+	switch itemTypeLower {
 	case pick:
 		if c.Stats.Balance.Load() >= int64(equipment.PickCost) {
 			slog.Info(

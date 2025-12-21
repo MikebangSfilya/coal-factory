@@ -19,13 +19,10 @@ import (
 )
 
 type HandleRepo interface {
-	//miners
 	GetMiners(ctx context.Context) map[uuid.UUID]factory.Miners
 	GetMiner(ctx context.Context, id string) (factory.Miners, error)
 	Hire(ctx context.Context, minerType miners.MinerType) (factory.Miners, error)
-	//stats
 	Balance(ctx context.Context) int
-	//items
 	Buy(ctx context.Context, item string) (*equipment.Equipments, error)
 	Items(ctx context.Context) equipment.Equipments
 	CheckWinGame(ctx context.Context) (statistic.CompanyStats, error)
@@ -41,14 +38,14 @@ type Handlers struct {
 	serverClose func() error
 }
 
-func New(handl HandleRepo) *Handlers {
+func New(handle HandleRepo) *Handlers {
 	return &Handlers{
-		service: handl,
+		service: handle,
 	}
 }
 
-func (handlers *Handlers) CloseServer(f func() error) {
-	handlers.serverClose = f
+func (h *Handlers) CloseServer(f func() error) {
+	h.serverClose = f
 }
 
 func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
@@ -56,11 +53,11 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), HireTimeOut)
 	defer cancel()
 
-	var dtoin dto_in.DTOHireMiner
-	if err := json.NewDecoder(r.Body).Decode(&dtoin); err != nil {
+	var dtoIn dto_in.DTOHireMiner
+	if err := json.NewDecoder(r.Body).Decode(&dtoIn); err != nil {
 		slog.Error(
 			"failed to decode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "decode",
 			"error", err,
 		)
@@ -69,7 +66,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := dtoin.Validate(); err != nil {
+	if err := dtoIn.Validate(); err != nil {
 		if errors.Is(err, dto_in.ErrEmptyMinerType) {
 			slog.Error("Empty type miner text", "error", err)
 			errDTO := dto_out.NewErrorDTO(err)
@@ -80,19 +77,20 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 			errDTO := dto_out.NewErrorDTO(err)
 			http.Error(w, errDTO.ToString(), http.StatusUnprocessableEntity)
 			return
-		} else {
-			slog.Error("Internal server error", "error", err)
-			errDTO := dto_out.NewErrorDTO(err)
-			http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
-			return
 		}
+
+		slog.Error("Internal server error", "error", err)
+		errDTO := dto_out.NewErrorDTO(err)
+		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
+		return
+
 	}
 
-	miner, err := h.service.Hire(ctx, miners.MinerType(dtoin.MinerType))
+	miner, err := h.service.Hire(ctx, miners.MinerType(dtoIn.MinerType))
 	if err != nil {
 		slog.Error(
 			"Not enough coal for hire miner",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "hire",
 			"error", err,
 		)
@@ -104,7 +102,7 @@ func (h *Handlers) Hire(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(miner.Info()); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -130,7 +128,7 @@ func (h *Handlers) GetMiners(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -157,7 +155,7 @@ func (h *Handlers) GetInfoMiner(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(miner.Info()); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -175,7 +173,7 @@ func (h *Handlers) GetBal(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(h.service.Balance(ctx)); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -202,7 +200,7 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(dtoStats); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -218,7 +216,6 @@ func (h *Handlers) CheckWin(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-// QueryParams либо в JSON теле
 func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
 	defer cancel()
@@ -233,7 +230,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("Item purchased successfully",
-		"layer", "handlers",
+		"layer", "h",
 		"operation", "buy",
 		"itemType", itemType)
 
@@ -242,7 +239,7 @@ func (h *Handlers) BuyItem(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(dtoResp); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)
@@ -261,7 +258,7 @@ func (h *Handlers) ItemsInfo(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(items); err != nil {
 		slog.Error(
 			"failed to encode JSON",
-			"layer", "handlers",
+			"layer", "h",
 			"operation", "encode",
 			"error", err,
 		)

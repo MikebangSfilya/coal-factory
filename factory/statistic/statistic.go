@@ -42,7 +42,7 @@ func New(equip *equipment.Equipments) *CompanyStats {
 
 // Проверяет выигрышь если все куплено. Если все куплено отмечает время победы
 func (cs *CompanyStats) CheckWinGame() (bool, error) {
-	if !cs.Equipment.AllBuyed() {
+	if !cs.Equipment.AllBought() {
 		slog.Info("The user checked the victory, the victory was not achieved.", "INFO", errNotWin)
 		return false, errNotWin
 	}

@@ -13,7 +13,7 @@ var (
 	TrolleyCost = 50000
 )
 
-func Init(cfg *config.Configurate) {
+func Init(cfg *config.Configuration) {
 	PickCost = cfg.PickCost
 	VentCost = cfg.VentCost
 	TrolleyCost = cfg.TrolleyCost
@@ -63,8 +63,8 @@ func (e *Equipments) Buy(itemType string) (string, error) {
 	}
 }
 
-func (e *Equipments) AllBuyed() bool {
-	if e.Pick.IsBuyed && e.Trolley.IsBuyed && e.Vent.IsBuyed {
+func (e *Equipments) AllBought() bool {
+	if e.Pick.IsBought && e.Trolley.IsBought && e.Vent.IsBought {
 		e.AllBuy = true
 		return e.AllBuy
 	}
@@ -72,28 +72,28 @@ func (e *Equipments) AllBuyed() bool {
 }
 
 type Pick struct {
-	IsBuyed bool
-	Cost    int
+	IsBought bool
+	Cost     int
 }
 
 func (e *Pick) Buy() {
-	e.IsBuyed = true
+	e.IsBought = true
 }
 
 type Vent struct {
-	IsBuyed bool
-	Cost    int
+	IsBought bool
+	Cost     int
 }
 
 func (e *Vent) Buy() {
-	e.IsBuyed = true
+	e.IsBought = true
 }
 
 type Trolley struct {
-	IsBuyed bool
-	Cost    int
+	IsBought bool
+	Cost     int
 }
 
 func (e *Trolley) Buy() {
-	e.IsBuyed = true
+	e.IsBought = true
 }
