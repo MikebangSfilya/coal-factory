@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 type HTTPRepo interface {
@@ -36,6 +37,7 @@ func New(handlers HTTPRepo) *Server {
 
 func (s *Server) Start() error {
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
