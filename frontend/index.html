@@ -64,6 +64,12 @@
             text-align: center;
         }
         
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
         .stat-value {
             font-size: 1.5rem;
             font-weight: bold;
@@ -145,7 +151,7 @@
             font-weight: bold;
         }
         
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #c0392b;
         }
         
@@ -205,6 +211,7 @@
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s;
+            min-width: 300px;
         }
         
         .success {
@@ -239,28 +246,33 @@
             .stats {
                 flex-direction: column;
             }
+            
+            .notification {
+                min-width: 90%;
+                right: 5%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Угольная Фабрика</h1>
+            <h1>🏭 Угольная Фабрика</h1>
             <div class="stats">
                 <div class="stat-card">
-                    <div class="stat-label">Баланс</div>
+                    <div class="stat-label">Баланс угля</div>
                     <div class="stat-value" id="balance">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Маленькие шахтеры</div>
+                    <div class="stat-label">Маленькие</div>
                     <div class="stat-value" id="little-miners">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Обычные шахтеры</div>
+                    <div class="stat-label">Обычные</div>
                     <div class="stat-value" id="normal-miners">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Мощные шахтеры</div>
+                    <div class="stat-label">Мощные</div>
                     <div class="stat-value" id="powerful-miners">0</div>
                 </div>
             </div>
@@ -268,44 +280,43 @@
         
         <div class="sections">
             <div class="section">
-                <h2>Нанять шахтера</h2>
+                <h2>👷 Нанять шахтера</h2>
                 <div class="form-group">
                     <label for="miner-type">Тип шахтера:</label>
                     <select id="miner-type">
-                        <option value="little">Маленький (5 угля)</option>
-                        <option value="normal">Обычный (50 угля)</option>
-                        <option value="powerful">Мощный (450 угля)</option>
+                        <option value="little">Маленький (5 угля/сек)</option>
+                        <option value="normal">Обычный (50 угля/сек)</option>
+                        <option value="powerful">Мощный (450 угля/сек)</option>
                     </select>
                 </div>
-                <button id="hire-btn">Нанять шахтера</button>
+                <button id="hire-btn">🚀 Нанять</button>
             </div>
             
             <div class="section">
-                <h2>Мои шахтеры</h2>
+                <h2>📋 Мои шахтеры</h2>
                 <div class="miner-list" id="miners-list">
                     <!-- Список шахтеров будет здесь -->
                 </div>
-                <button id="refresh-miners">Обновить список</button>
+                <button id="refresh-miners">🔄 Обновить</button>
             </div>
             
             <div class="section">
-                <h2>Магазин оборудования</h2>
+                <h2>🛒 Магазин оборудования</h2>
                 <div class="item-list" id="items-list">
                     <!-- Список оборудования будет здесь -->
                 </div>
-                <button id="refresh-items">Обновить оборудование</button>
             </div>
         </div>
         
         <div class="section">
-            <h2>Проверить победу</h2>
-            <p>Проверьте, достигли ли вы условий победы (куплено все оборудование)</p>
+            <h2>🏆 Проверить победу</h2>
+            <p>Купите все оборудование: Кирка (5k), Вентиляция (15k), Тележка (50k)</p>
             <button id="check-win">Проверить победу</button>
         </div>
         
         <div class="win-message" id="win-message">
-            <h2>Поздравляем! Вы выиграли!</h2>
-            <p>Вы успешно приобрели все необходимое оборудование для своей угольной фабрики!</p>
+            <h2>🎉 ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ! 🎉</h2>
+            <p>Вы улучшили условия труда шахтеров! Все оборудование куплено!</p>
             <div class="win-stats" id="win-stats">
                 <!-- Статистика победы будет здесь -->
             </div>
@@ -328,7 +339,6 @@
         const minersListEl = document.getElementById('miners-list');
         const refreshMinersBtn = document.getElementById('refresh-miners');
         const itemsListEl = document.getElementById('items-list');
-        const refreshItemsBtn = document.getElementById('refresh-items');
         const checkWinBtn = document.getElementById('check-win');
         const winMessageEl = document.getElementById('win-message');
         const winStatsEl = document.getElementById('win-stats');
@@ -354,19 +364,17 @@
             
             setTimeout(() => {
                 notificationEl.style.opacity = '0';
-            }, 3000);
+            }, 4000);
         }
         
         // Функция для обработки ошибок API
         async function handleApiError(response) {
             if (!response.ok) {
-                let errorMessage = `HTTP error! status: ${response.status}`;
+                let errorMessage = `HTTP ${response.status}`;
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;
-                } catch (e) {
-                    // Если не удалось распарсить JSON, используем стандартное сообщение
-                }
+                } catch (e) {}
                 throw new Error(errorMessage);
             }
             return response.json();
@@ -380,13 +388,10 @@
                 const response = await fetch(`${API_BASE}/balance`);
                 const data = await handleApiError(response);
                 balance = data;
-                balanceEl.textContent = data;
-                
-                // После обновления баланса перерисовываем предметы (для обновления кнопок)
-                renderItems();
+                balanceEl.textContent = data.toLocaleString();
+                renderItems(); // Обновляем кнопки покупки
             } catch (error) {
-                console.error('Ошибка при получении баланса:', error);
-                showNotification(`Ошибка: ${error.message}`, 'error');
+                console.error('Ошибка баланса:', error);
             }
         }
         
@@ -395,19 +400,15 @@
             try {
                 const response = await fetch(`${API_BASE}/miners`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ miner_type: minerType }),
                 });
-                
-                const data = await handleApiError(response);
-                showNotification(`Шахтер нанят! Тип: ${minerType}`, 'success');
-                await fetchBalance(); // Обновляем баланс
-                await fetchMiners(); // Обновляем список шахтеров
+                await handleApiError(response);
+                showNotification(`✅ Шахтер "${minerType}" нанят!`, 'success');
+                await fetchBalance();
+                await fetchMiners();
             } catch (error) {
-                console.error('Ошибка при найме шахтера:', error);
-                showNotification(`Ошибка: ${error.message}`, 'error');
+                showNotification(`❌ ${error.message}`, 'error');
             }
         }
         
@@ -416,17 +417,12 @@
             try {
                 const response = await fetch(`${API_BASE}/miners`);
                 const data = await handleApiError(response);
-                
-                // Преобразуем объект в массив
                 miners = Object.entries(data).map(([id, minerInfo]) => ({
-                    id,
-                    ...minerInfo
+                    id, ...minerInfo
                 }));
-                
                 renderMiners();
             } catch (error) {
-                console.error('Ошибка при получении списка шахтеров:', error);
-                showNotification(`Ошибка: ${error.message}`, 'error');
+                console.error('Ошибка шахтеров:', error);
             }
         }
         
@@ -436,38 +432,17 @@
                 const response = await fetch(`${API_BASE}/items`);
                 const data = await handleApiError(response);
                 
-                console.log('Получены данные оборудования:', data);
+                // Парсим разные варианты JSON из Go
+                items.pick.isBuyed = data.Pick?.IsBuyed ?? data.pick?.isBuyed ?? false;
+                items.pick.cost = data.Pick?.Cost ?? data.pick?.cost ?? 5000;
+                items.vent.isBuyed = data.Vent?.IsBuyed ?? data.vent?.isBuyed ?? false;
+                items.vent.cost = data.Vent?.Cost ?? data.vent?.cost ?? 15000;
+                items.trolley.isBuyed = data.Trolley?.IsBuyed ?? data.trolley?.isBuyed ?? false;
+                items.trolley.cost = data.Trolley?.Cost ?? data.trolley?.cost ?? 50000;
                 
-                // Обновляем состояние оборудования на основе ответа API
-                if (data.Pick) {
-                    items.pick.isBuyed = data.Pick.IsBuyed === true;
-                    items.pick.cost = data.Pick.Cost || 5000;
-                } else if (data.pick) {
-                    items.pick.isBuyed = data.pick.isBuyed === true;
-                    items.pick.cost = data.pick.cost || 5000;
-                }
-                
-                if (data.Vent) {
-                    items.vent.isBuyed = data.Vent.IsBuyed === true;
-                    items.vent.cost = data.Vent.Cost || 15000;
-                } else if (data.vent) {
-                    items.vent.isBuyed = data.vent.isBuyed === true;
-                    items.vent.cost = data.vent.cost || 15000;
-                }
-                
-                if (data.Trolley) {
-                    items.trolley.isBuyed = data.Trolley.IsBuyed === true;
-                    items.trolley.cost = data.Trolley.Cost || 50000;
-                } else if (data.trolley) {
-                    items.trolley.isBuyed = data.trolley.isBuyed === true;
-                    items.trolley.cost = data.trolley.cost || 50000;
-                }
-                
-                console.log('Обновленное состояние оборудования:', items);
                 renderItems();
             } catch (error) {
-                console.error('Ошибка при получении списка оборудования:', error);
-                showNotification(`Ошибка: ${error.message}`, 'error');
+                console.error('Ошибка оборудования:', error);
             }
         }
         
@@ -477,20 +452,12 @@
                 const response = await fetch(`${API_BASE}/items/${itemType}`, {
                     method: 'POST',
                 });
-                
-                const data = await handleApiError(response);
-                showNotification(`Оборудование куплено: ${data.item}`, 'success');
-                
-                // Сразу обновляем состояние купленного предмета
-                if (items[itemType]) {
-                    items[itemType].isBuyed = true;
-                }
-                
-                await fetchBalance(); // Обновляем баланс
-                await fetchItems(); // Обновляем список оборудования
+                await handleApiError(response);
+                showNotification(`✅ Куплено: ${itemType}!`, 'success');
+                await fetchBalance();
+                await fetchItems();
             } catch (error) {
-                console.error('Ошибка при покупке оборудования:', error);
-                showNotification(`Ошибка: ${error.message}`, 'error');
+                showNotification(`❌ ${error.message}`, 'error');
             }
         }
         
@@ -500,161 +467,131 @@
                 const response = await fetch(`${API_BASE}/win`);
                 const data = await handleApiError(response);
                 
-                // Показать сообщение о победе
-                winMessageEl.style.display = 'block';
-                
-                // Заполнить статистику победы с общим доходом
                 winStatsEl.innerHTML = `
                     <div class="stat-card">
-                        <div class="stat-label">Финальный баланс</div>
-                        <div class="stat-value">${data.Balance || data.balance || 0}</div>
+                        <div class="stat-label">💰 Финальный баланс</div>
+                        <div class="stat-value">${(data.Balance || data.balance || 0).toLocaleString()}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Общий доход</div>
-                        <div class="stat-value">${data.TotalBalance || data.totalBalance || 0}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Время игры</div>
+                        <div class="stat-label">⏱️ Время игры</div>
                         <div class="stat-value">${data.TotalTime || data.totalTime || 'N/A'}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Маленькие шахтеры</div>
+                        <div class="stat-label">👷 Маленькие</div>
                         <div class="stat-value">${data.LittleMinersHired || data.littleMinersHired || 0}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Обычные шахтеры</div>
+                        <div class="stat-label">👷 Обычные</div>
                         <div class="stat-value">${data.NormalMinersHired || data.normalMinersHired || 0}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Мощные шахтеры</div>
+                        <div class="stat-label">👷 Мощные</div>
                         <div class="stat-value">${data.PowerfulMinersHired || data.powerfulMinersHired || 0}</div>
                     </div>
                 `;
-                
-                showNotification('Поздравляем! Вы выиграли!', 'success');
+                winMessageEl.style.display = 'block';
+                showNotification('🏆 ПОБЕДА!', 'success');
             } catch (error) {
-                console.error('Ошибка при проверке победы:', error);
-                showNotification(`Условия победы еще не выполнены: ${error.message}`, 'error');
+                showNotification(`⏳ ${error.message}`, 'error');
             }
         }
         
         // Рендеринг
         
-        // Отрендерить список шахтеров
         function renderMiners() {
-            minersListEl.innerHTML = '';
+            minersListEl.innerHTML = miners.length ? 
+                miners.map(miner => {
+                    const type = miner.minerType || miner.MinerType || 'unknown';
+                    const energy = miner.energy || miner.Energy || 0;
+                    const power = miner.coalPower || miner.CoalPower || 0;
+                    
+                    // Считаем общее количество
+                    if (type === 'little') littleMinersCount++;
+                    else if (type === 'normal') normalMinersCount++;
+                    else if (type === 'powerful') powerfulMinersCount++;
+                    
+                    return `
+                        <div class="miner-item">
+                            <div>
+                                <div class="miner-type">${type}</div>
+                                <div class="miner-info">ID: ${miner.id || miner.ID}</div>
+                            </div>
+                            <div>
+                                <div class="miner-energy">⚡ ${energy}</div>
+                                <div>💎 ${power}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') : '<p>👷 Пока нет шахтеров</p>';
             
-            if (miners.length === 0) {
-                minersListEl.innerHTML = '<p>У вас пока нет шахтеров</p>';
-                return;
-            }
-            
-            // Сбрасываем счетчики
-            littleMinersCount = 0;
-            normalMinersCount = 0;
-            powerfulMinersCount = 0;
-            
-            miners.forEach(miner => {
-                const minerEl = document.createElement('div');
-                minerEl.className = 'miner-item';
-                
-                // Подсчитываем типы шахтеров
-                const minerType = miner.minerType || miner.MinerType;
-                if (minerType === 'little') {
-                    littleMinersCount++;
-                } else if (minerType === 'normal') {
-                    normalMinersCount++;
-                } else if (minerType === 'powerful') {
-                    powerfulMinersCount++;
-                }
-                
-                const minerInfo = `
-                    <div>
-                        <div class="miner-type">${minerType || 'Unknown'}</div>
-                        <div class="miner-info">ID: ${miner.id || miner.ID || 'Unknown'}</div>
-                    </div>
-                    <div>
-                        <div class="miner-energy">Энергия: ${miner.energy || miner.Energy || 0}</div>
-                        <div class="miner-power">Мощность: ${miner.coalPower || miner.CoalPower || 0}</div>
-                    </div>
-                `;
-                
-                minerEl.innerHTML = minerInfo;
-                minersListEl.appendChild(minerEl);
-            });
-            
-            // Обновляем счетчики шахтеров в интерфейсе
             littleMinersEl.textContent = littleMinersCount;
             normalMinersEl.textContent = normalMinersCount;
             powerfulMinersEl.textContent = powerfulMinersCount;
         }
         
-        // Отрендерить список оборудования
         function renderItems() {
-            itemsListEl.innerHTML = '';
+            if (balance === undefined) return;
             
+            itemsListEl.innerHTML = '';
             const itemTypes = [
-                { type: 'pick', name: 'Кирка', data: items.pick },
-                { type: 'vent', name: 'Вентиляция', data: items.vent },
-                { type: 'trolley', name: 'Тележка', data: items.trolley }
+                { type: 'pick', name: '⛏️ Кирка', data: items.pick },
+                { type: 'vent', name: '💨 Вентиляция', data: items.vent },
+                { type: 'trolley', name: '🚜 Тележка', data: items.trolley }
             ];
             
             itemTypes.forEach(item => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'item-card';
-                
                 const isPurchased = item.data.isBuyed;
                 const canAfford = balance >= item.data.cost;
                 
-                const itemInfo = `
+                itemEl.innerHTML = `
                     <div class="item-name">${item.name}</div>
-                    <div class="item-cost">Стоимость: ${item.data.cost}</div>
+                    <div class="item-cost">💰 ${item.data.cost.toLocaleString()}</div>
                     <div class="item-status ${isPurchased ? 'purchased' : 'not-purchased'}">
-                        ${isPurchased ? '✓ Куплено' : '✗ Не куплено'}
+                        ${isPurchased ? '✓ Куплено' : '✗ Доступно'}
                     </div>
-                    <button class="buy-item-btn" data-type="${item.type}" ${isPurchased || !canAfford ? 'disabled' : ''}>
-                        ${isPurchased ? 'Куплено' : 'Купить'}
+                    <button class="buy-item-btn" data-type="${item.type}" 
+                            ${isPurchased || !canAfford ? 'disabled' : ''}>
+                        ${isPurchased ? '✅ Куплено' : `Купить (-${item.data.cost.toLocaleString()})`}
                     </button>
                 `;
-                
-                itemEl.innerHTML = itemInfo;
                 itemsListEl.appendChild(itemEl);
             });
-            
-            // Добавляем обработчики событий для кнопок покупки
-            document.querySelectorAll('.buy-item-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const itemType = btn.getAttribute('data-type');
-                    buyItem(itemType);
-                });
-            });
         }
         
-        // Инициализация приложения
+        // Инициализация
         function init() {
-            // Загружаем начальные данные
-            fetchBalance();
-            fetchMiners();
-            fetchItems();
+            // Загрузка начальных данных
+            Promise.all([fetchBalance(), fetchMiners(), fetchItems()]);
             
-            // Настраиваем интервал для обновления баланса
-            setInterval(fetchBalance, 3000);
+            // Автообновление каждые 3 секунды
+            setInterval(() => {
+                fetchBalance();
+                fetchMiners();
+            }, 3000);
             
-            // Обработчики событий
-            hireBtn.addEventListener('click', () => {
-                const minerType = minerTypeSelect.value;
-                hireBtn.disabled = true;
-                hireMiner(minerType).finally(() => {
-                    hireBtn.disabled = false;
-                });
+            // Универсальный обработчик событий (event delegation)
+            document.addEventListener('click', async (e) => {
+                if (e.target.matches('#hire-btn:not([disabled])')) {
+                    const minerType = minerTypeSelect.value;
+                    hireBtn.disabled = true;
+                    setTimeout(() => hireBtn.disabled = false, 1000);
+                    await hireMiner(minerType);
+                }
+                if (e.target.matches('.buy-item-btn:not([disabled])')) {
+                    const itemType = e.target.dataset.type;
+                    await buyItem(itemType);
+                }
+                if (e.target.matches('#refresh-miners')) {
+                    await fetchMiners();
+                }
+                if (e.target.matches('#check-win')) {
+                    await checkWin();
+                }
             });
-            
-            refreshMinersBtn.addEventListener('click', fetchMiners);
-            refreshItemsBtn.addEventListener('click', fetchItems);
-            checkWinBtn.addEventListener('click', checkWin);
         }
         
-        // Запускаем приложение после загрузки DOM
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
