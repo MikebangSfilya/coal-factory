@@ -10,13 +10,13 @@ import (
 )
 
 type HTTPRepo interface {
-	Hire(w http.ResponseWriter, r *http.Request)
-	GetInfoMiner(w http.ResponseWriter, r *http.Request)
-	GetMiners(w http.ResponseWriter, r *http.Request)
-	GetBal(w http.ResponseWriter, r *http.Request)
-	CheckWin(w http.ResponseWriter, r *http.Request)
-	BuyItem(w http.ResponseWriter, r *http.Request)
-	ItemsInfo(w http.ResponseWriter, r *http.Request)
+	Hire() http.HandlerFunc
+	GetInfoMiner() http.HandlerFunc
+	GetMiners() http.HandlerFunc
+	GetBal() http.HandlerFunc
+	CheckWin() http.HandlerFunc
+	BuyItem() http.HandlerFunc
+	ItemsInfo() http.HandlerFunc
 }
 
 type Server struct {
@@ -42,24 +42,24 @@ func New(addr string, handlers HTTPRepo) *Server {
 
 	// Группировка маршрутов
 	r.Route("/miners", func(r chi.Router) {
-		r.Post("/", handlers.Hire)
-		r.Get("/{id}", handlers.GetInfoMiner)
-		r.Get("/", handlers.GetMiners)
+		r.Post("/", handlers.Hire())
+		r.Get("/{id}", handlers.GetInfoMiner())
+		r.Get("/", handlers.GetMiners())
 	})
 
 	r.Route("/items", func(r chi.Router) {
-		r.Post("/{type}", handlers.BuyItem)
-		r.Get("/", handlers.ItemsInfo)
+		r.Post("/{type}", handlers.BuyItem())
+		r.Get("/", handlers.ItemsInfo())
 	})
 
-	r.Get("/balance", handlers.GetBal)
-	r.Get("/win", handlers.CheckWin)
+	r.Get("/balance", handlers.GetBal())
+	r.Get("/win", handlers.CheckWin())
 
 	return &Server{
 		httpServer: &http.Server{
 			Addr:         addr,
 			Handler:      r,
-			ReadTimeout:  5 * time.Second, // Хорошая практика
+			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 		},
 	}
