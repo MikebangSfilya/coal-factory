@@ -33,6 +33,8 @@ func main() {
 		log.Printf(".env not found: %v", err)
 	}
 
+	winChan := make(chan struct{}, 1)
+
 	cfg := config.Load()
 
 	equipment.Load(cfg)
@@ -43,7 +45,7 @@ func main() {
 
 	gameService := service.New(company)
 
-	handle := handlers.New(gameService)
+	handle := handlers.New(gameService, winChan)
 
 	srv := server.New(":8080", handle)
 
@@ -57,11 +59,11 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		log.Println("received shutdown signal")
+		log.Println("received shutdown signal (Ctrl+C)")
+	case <-winChan:
+		log.Println("Victory! Game finished, shutting down...")
 	case err := <-errChan:
-		if err != nil {
-			log.Printf("Server error: %v", err)
-		}
+		log.Printf("Server error: %v", err)
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

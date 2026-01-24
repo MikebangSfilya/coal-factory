@@ -16,17 +16,14 @@
 
 ## Запуск проекта
 
-```bash
-# Клонируем репозиторий
-git clone https://github.com/MikebangSfilya/coal-factory
-cd coal-factory
+1. **Подготовка**: настройте параметры стоимости в файле .env.
+2. **Документация**: для генерации Swagger выполните команду `swag init`.
+3. **Запуск**:
+   ```bash
+   go run main.go
+   ```
+Swagger UI доступен по пути /swagger/index.html
 
-# Запуск сервера
-go run ./main.go
-
-# Сервер слушает на :8080
-curl http://localhost:8080/miners
-```
 
 ### Запуск тестового интерфейса (опционально)
 
@@ -41,7 +38,7 @@ curl http://localhost:8080/miners
 
 ### Пассивный доход
 
-С самого запуска нашего предприятия, волшебным образом мы получаем ровно одну единицу угля в одну секунду, никто не знает кто ее добывает и кто ее доставляет, вам нужно лишь знать, что вы никогда не останетесь без угля.
+С самого запуска нашего предприятия, волшебным образом мы получаем ровно одну единицу угля в одну секунду, никто не знает, кто ее добывает и кто ее доставляет, вам нужно лишь знать, что вы никогда не останетесь без угля.
 
 ### Рабочие
 
@@ -69,13 +66,13 @@ POST /miners
 
 ``` bash
 # Купить кирку
-POST /equipment/{pick}
+POST /items/{pick}
 
 # Купить вентиляцию  
-POST /equipment/{vent}
+POST /items/{vent}
 
 # Купить вагонетку
-POST /equipment/{trolley}
+POST /items/{trolley}
 ```
 
 ### Победа
@@ -107,13 +104,12 @@ POST /equipment/{trolley}
 **MinerInfo**:
 
 ```go
-type MinerInfo struct {
-    ID        uuid.UUID
-    MinerType MinerType
-    CoalPower Coal
-    Energy    int64
-    Cost      int64
-
+    type MinerInfo struct {
+    ID        uuid.UUID
+    MinerType MinerType
+    CoalPower Coal
+    Energy    Energy
+    Cost      Coal
 }
 ```
 
@@ -121,6 +117,3 @@ type MinerInfo struct {
 
 - Go 1.24
 - chi router
-- goroutines, channels
-- thread-safe атомарные операции
-- structured logging (`slog`)

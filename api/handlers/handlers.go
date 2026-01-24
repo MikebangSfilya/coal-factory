@@ -34,13 +34,14 @@ const (
 )
 
 type Handlers struct {
-	service     HandleRepo
-	serverClose func() error
+	service HandleRepo
+	winChan chan<- struct{}
 }
 
-func New(handle HandleRepo) *Handlers {
+func New(handle HandleRepo, winChan chan<- struct{}) *Handlers {
 	return &Handlers{
 		service: handle,
+		winChan: winChan,
 	}
 }
 
@@ -192,13 +193,10 @@ func (h *Handlers) CheckWin() http.HandlerFunc {
 			return
 		}
 
-		go func() {
-			if h.serverClose != nil {
-				if err := h.serverClose(); err != nil {
-					slog.Debug("server close error", "error", err)
-				}
-			}
-		}()
+		select {
+		case h.winChan <- struct{}{}:
+		default:
+		}
 	}
 }
 
