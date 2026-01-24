@@ -58,7 +58,7 @@ Swagger UI доступен по пути /swagger/index.html
 # Нанять майнера
 POST /miners
 {
-    "miner_type": "little"}  # little, normal, powerful
+    "miner_type": "little"  # little, normal, powerful
 }
 ```
 
