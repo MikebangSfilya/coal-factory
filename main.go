@@ -39,7 +39,7 @@ func main() {
 
 	handle := handlers.New(gameService)
 
-	srv := server.New(":9090", handle)
+	srv := server.New(":8080", handle)
 
 	errChan := make(chan error, 1)
 	go func() {

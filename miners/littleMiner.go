@@ -3,7 +3,7 @@ package miners
 import (
 	"context"
 	"log/slog"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,10 +15,11 @@ const (
 )
 
 type LittleMiner struct {
+	sync.RWMutex
 	Id            uuid.UUID
 	SleepDuration time.Duration
-	CoalIncome    *atomic.Int64
-	Energy        *atomic.Int64
+	CoalIncome    Coal
+	Energy        Energy
 }
 
 func NewLittleMiner() *LittleMiner {
@@ -28,16 +29,12 @@ func NewLittleMiner() *LittleMiner {
 		coal         = 1
 		energyLittle = 30
 	)
-	energy := &atomic.Int64{}
-	coalPower := &atomic.Int64{}
-	energy.Add(energyLittle)
-	coalPower.Add(coal)
 
 	return &LittleMiner{
 		Id:            uuid.New(),
 		SleepDuration: timeSleep,
-		CoalIncome:    coalPower,
-		Energy:        energy,
+		CoalIncome:    coal,
+		Energy:        energyLittle,
 	}
 }
 
@@ -48,20 +45,31 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 	go func() {
 		defer close(transferPoint)
 
-		for m.Energy.Load() > 0 {
-			select {
-			case <-ctx.Done():
-				slog.Info("Context stopped", "Context", ctx)
-				return
-			case <-time.After(m.SleepDuration):
+		ticker := time.NewTicker(m.SleepDuration)
+		defer ticker.Stop()
 
-			}
+		for {
 			select {
 			case <-ctx.Done():
 				return
-			case transferPoint <- Coal(m.CoalIncome.Load()):
-				m.Energy.Add(-1)
+			case <-ticker.C:
+				m.Lock()
+				if m.Energy <= 0 {
+					m.Unlock()
+					slog.Info("Miner dead")
+					return
+				}
+
+				income := m.CoalIncome
+				m.Energy--
+				m.Unlock()
+				select {
+				case <-ctx.Done():
+					return
+				case transferPoint <- Coal(income):
+				}
 			}
+
 		}
 
 	}()
@@ -70,11 +78,14 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 }
 
 func (m *LittleMiner) Info() MinerInfo {
+	m.RLock()
+	defer m.RUnlock()
+
 	return MinerInfo{
 		ID:        m.Id,
 		MinerType: MinerTypeLittle,
-		Energy:    Energy(m.Energy.Load()),
-		CoalPower: Coal(m.CoalIncome.Load()),
+		Energy:    m.Energy,
+		CoalPower: m.CoalIncome,
 		Cost:      LittleSalary,
 	}
 }
