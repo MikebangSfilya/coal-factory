@@ -186,3 +186,22 @@ func (h *Handlers) BuyItem() http.HandlerFunc {
 		}
 	}
 }
+
+func (h *Handlers) ItemsInfo() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
+		defer cancel()
+		items := h.service.Items(ctx)
+		if err := json.NewEncoder(w).Encode(items); err != nil {
+			slog.Error(
+				"failed to encode JSON",
+				"layer", "h",
+				"operation", "encode",
+				"error", err,
+			)
+			errDTO := dto_out.NewErrorDTO(err)
+			http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
+		}
+	}
+}
