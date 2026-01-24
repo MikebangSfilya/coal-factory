@@ -66,7 +66,7 @@ func (m *LittleMiner) Run(ctx context.Context) <-chan Coal {
 				select {
 				case <-ctx.Done():
 					return
-				case transferPoint <- Coal(income):
+				case transferPoint <- income:
 				}
 			}
 

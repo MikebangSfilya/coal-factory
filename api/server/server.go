@@ -25,7 +25,7 @@ type Server struct {
 
 func New(addr string, handlers HTTPRepo) *Server {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	//r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	// CORS middleware

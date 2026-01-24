@@ -6,7 +6,6 @@ import (
 	"coalFactory/miners"
 	"context"
 	"errors"
-	"log"
 	"log/slog"
 	"strings"
 	"sync"
@@ -58,12 +57,8 @@ func Start(ctx context.Context, equip *equipment.Equipments) *Company {
 	comp := NewCompany(ctx, equip)
 	go comp.PassiveIncome()
 	go comp.RaiseBalance()
-	go comp.ShowIncome()
-	slog.Info(
-		"start company layer",
-		"layer", "company",
-		"operation", "run",
-	)
+
+	slog.Info("start new Company")
 	return comp
 }
 
@@ -207,21 +202,6 @@ func (c *Company) GetBalance(ctx context.Context) int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return int(c.Stats.Balance.Load())
-}
-
-func (c *Company) ShowIncome() {
-	for {
-		select {
-		case <-c.CompanyContext.Done():
-			return
-		default:
-			c.mu.RLock()
-			b := c.Stats.Income
-			log.Println(b.Load())
-			c.mu.RUnlock()
-			time.Sleep(1 * time.Second)
-		}
-	}
 }
 
 func (c *Company) WinGame(ctx context.Context) (statistic.CompanyStats, error) {
