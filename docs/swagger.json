@@ -1,0 +1,352 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API coal-factory",
+        "title": "Coal Factory API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/balance": {
+            "get": {
+                "description": "Возвращает текущее количество добытого угля",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "economy"
+                ],
+                "summary": "Текущий баланс",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "/items": {
+            "get": {
+                "description": "Возвращает информацию о текущем оборудовании и его статусе покупки",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Состояние оборудования",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Equipments"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{type}": {
+            "post": {
+                "description": "Позволяет приобрести кирку, вентиляцию или тележку за уголь",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Купить оборудование",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Тип предмета (pick, vent, trolley)",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.DTORespItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miners": {
+            "get": {
+                "description": "Возвращает карту всех активных шахтеров в компании",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miners"
+                ],
+                "summary": "Список всех рабочих",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/miners.MinerInfo"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Списывает уголь и создает нового воркера выбранного типа",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miners"
+                ],
+                "summary": "Нанять нового шахтера",
+                "parameters": [
+                    {
+                        "description": "Тип шахтера",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto_in.DTOHireMiner"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/miners.MinerInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    },
+                    "402": {
+                        "description": "Payment Required",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miners/{id}": {
+            "get": {
+                "description": "Возвращает данные конкретного шахтера по его ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miners"
+                ],
+                "summary": "Информация о шахтере",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID шахтера",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/miners.MinerInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/win": {
+            "get": {
+                "description": "Если всё оборудование куплено, возвращает финальную статистику и инициирует остановку сервера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game"
+                ],
+                "summary": "Проверить условия победы",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.DTOStats"
+                        }
+                    },
+                    "412": {
+                        "description": "Precondition Failed",
+                        "schema": {
+                            "$ref": "#/definitions/dto_out.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto_in.DTOHireMiner": {
+            "type": "object",
+            "properties": {
+                "miner_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto_out.DTORespItem": {
+            "type": "object",
+            "properties": {
+                "item": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto_out.DTOStats": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "littleMinersHired": {
+                    "type": "integer"
+                },
+                "normalMinersHired": {
+                    "type": "integer"
+                },
+                "powerfulMinersHired": {
+                    "type": "integer"
+                },
+                "totalBalance": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "totalTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto_out.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipment.Equipments": {
+            "type": "object",
+            "properties": {
+                "allBuy": {
+                    "type": "boolean"
+                },
+                "pick": {
+                    "$ref": "#/definitions/equipment.Pick"
+                },
+                "trolley": {
+                    "$ref": "#/definitions/equipment.Trolley"
+                },
+                "vent": {
+                    "$ref": "#/definitions/equipment.Vent"
+                }
+            }
+        },
+        "equipment.Pick": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "integer"
+                },
+                "isBought": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "equipment.Trolley": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "integer"
+                },
+                "isBought": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "equipment.Vent": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "integer"
+                },
+                "isBought": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "miners.MinerInfo": {
+            "type": "object",
+            "properties": {
+                "coalPower": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "cost": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "energy": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "minerType": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

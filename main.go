@@ -17,6 +17,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title           Coal Factory API
+// @version         1.0
+// @description     API coal-factory
+
+// @host      localhost:8080
+// @BasePath  /
 func main() {
 
 	// the application is listening for the SIGTERM signal to exit
@@ -27,9 +33,11 @@ func main() {
 		log.Printf(".env not found: %v", err)
 	}
 
+	winChan := make(chan struct{}, 1)
+
 	cfg := config.Load()
 
-	equipment.Init(cfg)
+	equipment.Load(cfg)
 
 	equip := equipment.NewEquipment()
 
@@ -37,9 +45,9 @@ func main() {
 
 	gameService := service.New(company)
 
-	handle := handlers.New(gameService)
+	handle := handlers.New(gameService, winChan)
 
-	srv := server.New(handle)
+	srv := server.New(":8080", handle)
 
 	errChan := make(chan error, 1)
 	go func() {
@@ -51,11 +59,11 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		log.Println("received shutdown signal")
+		log.Println("received shutdown signal (Ctrl+C)")
+	case <-winChan:
+		log.Println("Victory! Game finished, shutting down...")
 	case err := <-errChan:
-		if err != nil {
-			log.Printf("Server error: %v", err)
-		}
+		log.Printf("Server error: %v", err)
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

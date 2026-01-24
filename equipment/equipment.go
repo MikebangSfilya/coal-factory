@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	PickCost    = 5000
-	VentCost    = 15000
-	TrolleyCost = 50000
+	PickCost    int
+	VentCost    int
+	TrolleyCost int
 )
 
-func Init(cfg *config.Configuration) {
+func Load(cfg *config.Configuration) {
 	PickCost = cfg.PickCost
 	VentCost = cfg.VentCost
 	TrolleyCost = cfg.TrolleyCost
@@ -26,10 +26,10 @@ const (
 )
 
 type Equipments struct {
-	Pick    Pick
-	Vent    Vent
-	Trolley Trolley
-	AllBuy  bool
+	Pick    Pick    `json:"pick"`
+	Vent    Vent    `json:"vent"`
+	Trolley Trolley `json:"trolley"`
+	AllBuy  bool    `json:"allBuy"`
 }
 
 func NewEquipment() *Equipments {
@@ -72,8 +72,8 @@ func (e *Equipments) AllBought() bool {
 }
 
 type Pick struct {
-	IsBought bool
-	Cost     int
+	IsBought bool `json:"isBought"`
+	Cost     int  `json:"cost"`
 }
 
 func (e *Pick) Buy() {
@@ -81,8 +81,8 @@ func (e *Pick) Buy() {
 }
 
 type Vent struct {
-	IsBought bool
-	Cost     int
+	IsBought bool `json:"isBought"`
+	Cost     int  `json:"cost"`
 }
 
 func (e *Vent) Buy() {
@@ -90,8 +90,8 @@ func (e *Vent) Buy() {
 }
 
 type Trolley struct {
-	IsBought bool
-	Cost     int
+	IsBought bool `json:"isBought"`
+	Cost     int  `json:"cost"`
 }
 
 func (e *Trolley) Buy() {

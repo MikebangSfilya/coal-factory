@@ -6,7 +6,6 @@ import (
 	"coalFactory/miners"
 	"context"
 	"errors"
-	"log"
 	"log/slog"
 	"strings"
 	"sync"
@@ -40,11 +39,6 @@ type Company struct {
 
 func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
 	companyContext, companyStop := context.WithCancel(ctx)
-	slog.Info( //Лог на будущее если будет возможность делать несколько игроков
-		"create new Company",
-		"layer", "company",
-		"operation", "create",
-	)
 	return &Company{
 		Miners:         make(map[uuid.UUID]Miners),
 		Income:         make(chan miners.Coal),
@@ -58,12 +52,8 @@ func Start(ctx context.Context, equip *equipment.Equipments) *Company {
 	comp := NewCompany(ctx, equip)
 	go comp.PassiveIncome()
 	go comp.RaiseBalance()
-	go comp.ShowIncome()
-	slog.Info(
-		"start company layer",
-		"layer", "company",
-		"operation", "run",
-	)
+
+	slog.Info("start new Company")
 	return comp
 }
 
@@ -209,21 +199,6 @@ func (c *Company) GetBalance(ctx context.Context) int {
 	return int(c.Stats.Balance.Load())
 }
 
-func (c *Company) ShowIncome() {
-	for {
-		select {
-		case <-c.CompanyContext.Done():
-			return
-		default:
-			c.mu.RLock()
-			b := c.Stats.Income
-			log.Println(b.Load())
-			c.mu.RUnlock()
-			time.Sleep(1 * time.Second)
-		}
-	}
-}
-
 func (c *Company) WinGame(ctx context.Context) (statistic.CompanyStats, error) {
 	win, err := c.Stats.CheckWinGame()
 	if err != nil {
@@ -255,7 +230,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", pick,
 				"cost", equipment.PickCost,
 			)
-			c.Stats.Equipment.Buy(pick)
+			_, err := c.Stats.Equipment.Buy(pick)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.PickCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -269,7 +247,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", vent,
 				"cost", equipment.VentCost,
 			)
-			c.Stats.Equipment.Buy(vent)
+			_, err := c.Stats.Equipment.Buy(vent)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.VentCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -283,7 +264,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", trolley,
 				"cost", equipment.TrolleyCost,
 			)
-			c.Stats.Equipment.Buy(trolley)
+			_, err := c.Stats.Equipment.Buy(trolley)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.TrolleyCost))
 		} else {
 			return nil, ErrNotEnoughMoney

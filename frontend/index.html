@@ -3,589 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coal Factory</title>
+    <title>Coal Factory OS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #34495e;
-            --accent: #e74c3c;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --text: #ecf0f1;
-            --dark-bg: #1a252f;
+            /* Theme Colors */
+            --bg-body: #0f1012;
+            --bg-card: #18191c;
+            --bg-card-hover: #222327;
+
+            --accent-primary: #f59e0b; /* Amber */
+            --accent-glow: rgba(245, 158, 11, 0.4);
+
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+
+            --success: #10b981;
+            --danger: #ef4444;
+
+            --border: #2d3035;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--text);
-            line-height: 1.6;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
         }
 
-        .container {
-            max-width: 1200px;
+        /* Typography */
+        h1, h2, h3 { font-family: 'Oswald', sans-serif; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Grid Layout */
+        .dashboard {
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: auto 1fr;
+            gap: 24px;
         }
 
+        /* Header */
         header {
-            background-color: var(--primary);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
-
-        .stats {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px 30px;
+            border-radius: 16px;
             display: flex;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        .stat-card {
-            background-color: var(--secondary);
-            padding: 15px;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand i { font-size: 2rem; color: var(--accent-primary); }
+        .balance-val {
+            font-size: 2.5rem; color: var(--accent-primary); font-weight: 700;
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: transform 0.1s;
         }
+        .balance-val.pulse { transform: scale(1.1); }
 
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--warning);
-        }
-
-        .sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        /* Panels */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
-            margin-top: 20px;
         }
 
-        .section {
-            background-color: var(--primary);
-            border-radius: 8px;
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 5px;
+        }
+        .panel-header h2 { color: var(--text-muted); font-size: 1rem; }
+        .panel-header i { color: var(--accent-primary); }
+
+        /* Shop Cards */
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+        }
+
+        .card-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .section h2 {
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            color: var(--text);
-        }
-
-        .miner-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-
-        .miner-item {
-            background-color: var(--secondary);
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .miner-info {
-            font-size: 0.9rem;
-        }
-
-        .miner-type {
-            font-weight: bold;
-        }
-
-        .miner-energy {
-            color: var(--warning);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        select, button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            background-color: var(--secondary);
-            color: var(--text);
-            font-size: 1rem;
-        }
-
-        button {
-            background-color: var(--accent);
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
-
-        button:hover:not(:disabled) {
-            background-color: #c0392b;
-        }
-
-        button:disabled {
-            background-color: #7f8c8d;
-            cursor: not-allowed;
-        }
-
-        .item-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .item-card {
-            background-color: var(--secondary);
-            border-radius: 6px;
-            padding: 15px;
             text-align: center;
-            transition: transform 0.3s;
+            transition: transform 0.2s, background 0.2s;
+            position: relative;
+        }
+        .card-item:hover { background: var(--bg-card-hover); transform: translateY(-4px); border-color: var(--text-muted); }
+
+        .card-item.bought { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .card-item.bought::after {
+            content: 'INSTALLED'; position: absolute; top: 10px; right: 10px;
+            font-size: 0.6rem; background: var(--success); color: #000;
+            padding: 2px 6px; border-radius: 4px; font-weight: bold;
         }
 
-        .item-card:hover {
-            transform: translateY(-5px);
+        .card-icon { font-size: 2.2rem; margin-bottom: 15px; color: var(--text-muted); transition: color 0.3s; }
+        .card-item:hover .card-icon { color: var(--accent-primary); }
+        .card-item.bought .card-icon { color: var(--success); }
+
+        .price-tag {
+            background: rgba(0,0,0,0.3); display: inline-block; padding: 4px 10px;
+            border-radius: 4px; font-size: 0.9rem; color: var(--accent-primary); margin: 10px 0;
         }
 
-        .item-name {
-            font-weight: bold;
-            margin-bottom: 10px;
+        /* Buttons */
+        .btn {
+            background: var(--accent-primary); color: #000; border: none; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: 700; text-transform: uppercase;
+            font-family: 'Oswald', sans-serif; cursor: pointer; transition: all 0.2s;
+        }
+        .btn:hover:not(:disabled) { background: #fff; box-shadow: 0 0 15px var(--accent-primary); }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        .btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        .btn-win { background: var(--success); color: white; margin-top: auto; }
+        .btn-win:hover { box-shadow: 0 0 15px var(--success); }
+
+        /* Miner List */
+        .miner-list-container { max-height: 600px; overflow-y: auto; padding-right: 5px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .miner-row {
+            display: flex; align-items: center; background: rgba(255,255,255,0.02);
+            padding: 12px; border-radius: 8px; margin-bottom: 8px;
+            border-left: 3px solid transparent;
+        }
+        .miner-row.little { border-left-color: #94a3b8; }
+        .miner-row.normal { border-left-color: var(--accent-primary); }
+        .miner-row.powerful { border-left-color: #d946ef; }
+
+        .miner-avatar {
+            width: 36px; height: 36px; background: rgba(255,255,255,0.05);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-right: 12px; color: var(--text-muted);
         }
 
-        .item-cost {
-            color: var(--warning);
-            margin-bottom: 10px;
+        .miner-info { flex: 1; }
+        .miner-type { font-weight: bold; font-size: 0.85rem; display: block; color: var(--text-main); }
+        .miner-id { font-size: 0.7rem; color: var(--text-muted); }
+
+        .miner-stats-box { text-align: right; }
+        .energy-bar-bg { width: 50px; height: 4px; background: #333; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .energy-bar-fill { height: 100%; background: var(--success); transition: width 0.5s; }
+
+        /* Modals & Toasts */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000;
+            display: none; justify-content: center; align-items: center;
         }
-
-        .item-status {
-            font-style: italic;
-            margin-bottom: 10px;
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--success); padding: 40px;
+            border-radius: 20px; text-align: center; max-width: 500px; width: 90%;
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.2); animation: slideUp 0.4s ease-out;
         }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; text-align: left; }
+        .stat-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); display: block; }
+        .stat-value { font-size: 1.1rem; font-weight: bold; }
 
-        .purchased {
-            color: var(--success);
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; background: var(--bg-card);
+            border-left: 4px solid var(--accent-primary); padding: 15px 25px; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 15px;
+            transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 2000;
         }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
 
-        .not-purchased {
-            color: var(--accent);
-        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 4px;
-            color: white;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            min-width: 300px;
-        }
-
-        .success {
-            background-color: var(--success);
-        }
-
-        .error {
-            background-color: var(--accent);
-        }
-
-        .win-message {
-            text-align: center;
-            padding: 30px;
-            background-color: var(--success);
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .win-stats {
-            margin-top: 15px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .sections {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                flex-direction: column;
-            }
-
-            .notification {
-                min-width: 90%;
-                right: 5%;
-            }
-        }
+        @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } .miner-list-container { max-height: 300px; } }
     </style>
 </head>
 <body>
-<div class="container">
+
+<div class="dashboard">
     <header>
-        <h1>🏭 Угольная Фабрика</h1>
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-label">Баланс угля</div>
-                <div class="stat-value" id="balance">0</div>
+        <div class="brand">
+            <i class="fa-solid fa-industry"></i>
+            <div>
+                <h1>Coal Factory</h1>
+                <div class="mono" style="font-size: 0.75rem; color: var(--success);">
+                    <i class="fa-solid fa-circle" style="font-size: 6px; vertical-align: middle;"></i> SYSTEM ONLINE
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Маленькие</div>
-                <div class="stat-value" id="little-miners">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Обычные</div>
-                <div class="stat-value" id="normal-miners">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Мощные</div>
-                <div class="stat-value" id="powerful-miners">0</div>
-            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Resources</div>
+            <div class="balance-val mono" id="balance-display">0</div>
         </div>
     </header>
 
-    <div class="sections">
-        <div class="section">
-            <h2>👷 Нанять шахтера</h2>
-            <div class="form-group">
-                <label for="miner-type">Тип шахтера:</label>
-                <select id="miner-type">
-                    <option value="little">Маленький (5 угля/сек)</option>
-                    <option value="normal">Обычный (50 угля/сек)</option>
-                    <option value="powerful">Мощный (450 угля/сек)</option>
-                </select>
+    <main style="display: flex; flex-direction: column; gap: 24px;">
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Workforce</h2>
+                <i class="fa-solid fa-users-gear"></i>
             </div>
-            <button id="hire-btn">🚀 Нанять</button>
-        </div>
+            <div class="shop-grid">
 
-        <div class="section">
-            <h2>📋 Мои шахтеры</h2>
-            <div class="miner-list" id="miners-list">
-                <!-- Список шахтеров будет здесь -->
+                <div class="card-item">
+                    <div class="card-icon"><i class="fa-solid fa-person-digging"></i></div>
+                    <h3>Little Miner</h3>
+                    <div class="mono price-tag">5 COAL</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                        Power: <span style="color:white">1</span> / Spd: 3s
+                    </div>
+                    <button class="btn" onclick="hireMiner('little')">HIRE UNIT</button>
+                </div>
+
+                <div class="card-item">
+                    <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                    <h3>Normal Miner</h3>
+                    <div class="mono price-tag">50 COAL</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                        Power: <span style="color:white">3</span> / Spd: 2s
+                    </div>
+                    <button class="btn" onclick="hireMiner('normal')">HIRE UNIT</button>
+                </div>
+
+                <div class="card-item">
+                    <div class="card-icon"><i class="fa-solid fa-bore-hole"></i></div>
+                    <h3>Heavy Drill</h3>
+                    <div class="mono price-tag">450 COAL</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                        Power: <span style="color:#d946ef">10++</span> / Spd: 1s
+                    </div>
+                    <button class="btn" onclick="hireMiner('powerful')">HIRE UNIT</button>
+                </div>
+
             </div>
-            <button id="refresh-miners">🔄 Обновить</button>
-        </div>
+        </section>
 
-        <div class="section">
-            <h2>🛒 Магазин оборудования</h2>
-            <div class="item-list" id="items-list">
-                <!-- Список оборудования будет здесь -->
+        <section class="panel" style="flex: 1;">
+            <div class="panel-header">
+                <h2>Infrastructure</h2>
+                <i class="fa-solid fa-toolbox"></i>
+            </div>
+            <div class="shop-grid" id="equipment-list">
+                <div style="color: var(--text-muted); padding: 20px;">Fetching blueprints...</div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <button class="btn btn-win" onclick="checkWin()">
+                <i class="fa-solid fa-clipboard-check"></i> VERIFY PRODUCTION QUOTA
+            </button>
+        </section>
+    </main>
+
+    <aside class="panel">
+        <div class="panel-header">
+            <h2>Active Units</h2>
+            <div class="mono" id="miner-count">0</div>
+        </div>
+        <div class="miner-list-container" id="miner-list">
+            <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.9rem;">
+                No active units.
             </div>
         </div>
-    </div>
+    </aside>
+</div>
 
-    <div class="section">
-        <h2>🏆 Проверить победу</h2>
-        <p>Купите все оборудование: Кирка (5k), Вентиляция (15k), Тележка (50k)</p>
-        <button id="check-win">Проверить победу</button>
-    </div>
+<div class="modal-overlay" id="win-modal">
+    <div class="modal">
+        <i class="fa-solid fa-flag-checkered" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 20px;"></i>
+        <h1>QUOTA ACHIEVED</h1>
+        <p style="color: var(--text-muted);">Facility fully automated. Good job, Manager.</p>
 
-    <div class="win-message" id="win-message">
-        <h2>🎉 ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ! 🎉</h2>
-        <p>Вы улучшили условия труда шахтеров! Все оборудование куплено!</p>
-        <div class="win-stats" id="win-stats">
-            <!-- Статистика победы будет здесь -->
-        </div>
+        <div class="stat-grid" id="win-stats"></div>
+        <button class="btn" onclick="location.reload()">RESTART SIMULATION</button>
     </div>
 </div>
 
-<div class="notification" id="notification"></div>
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-info" id="toast-icon"></i>
+    <span id="toast-msg">Notification</span>
+</div>
 
 <script>
     const API_BASE = 'http://localhost:8080';
+    let currentBalance = 0;
+    let isWin = false;
 
-    const balanceEl = document.getElementById('balance');
-    const littleMinersEl = document.getElementById('little-miners');
-    const normalMinersEl = document.getElementById('normal-miners');
-    const powerfulMinersEl = document.getElementById('powerful-miners');
-    const minerTypeSelect = document.getElementById('miner-type');
-    const hireBtn = document.getElementById('hire-btn');
-    const minersListEl = document.getElementById('miners-list');
-    const refreshMinersBtn = document.getElementById('refresh-miners');
-    const itemsListEl = document.getElementById('items-list');
-    const checkWinBtn = document.getElementById('check-win');
-    const winMessageEl = document.getElementById('win-message');
-    const winStatsEl = document.getElementById('win-stats');
-    const notificationEl = document.getElementById('notification');
-
-    let miners = [];
-    let items = {
-        pick: { isBuyed: false, cost: 5000 },
-        vent: { isBuyed: false, cost: 15000 },
-        trolley: { isBuyed: false, cost: 50000 }
+    // Config for Equipment Icons
+    const itemConfig = {
+        pick: { name: 'Titanium Pickaxe', icon: 'fa-hammer' },
+        vent: { name: 'HVAC System', icon: 'fa-fan' },
+        trolley: { name: 'Automated Cart', icon: 'fa-truck-ramp-box' }
     };
-    let balance = 0;
-    let littleMinersCount = 0;
-    let normalMinersCount = 0;
-    let powerfulMinersCount = 0;
 
-    function showNotification(message, type = 'success') {
-        notificationEl.textContent = message;
-        notificationEl.className = `notification ${type}`;
-        notificationEl.style.opacity = '1';
-        setTimeout(() => { notificationEl.style.opacity = '0'; }, 4000);
-    }
+    // Config for Miner Icons in List
+    const minerIcons = {
+        little: 'fa-person-digging',
+        normal: 'fa-helmet-safety',
+        powerful: 'fa-bore-hole'
+    };
 
-    async function handleApiError(response) {
-        if (!response.ok) {
-            let errorMessage = `HTTP ${response.status}`;
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorMessage;
-            } catch (e) {}
-            throw new Error(errorMessage);
-        }
-        return response.json();
-    }
-
-    async function fetchBalance() {
+    async function apiCall(endpoint, method = 'GET', body = null) {
         try {
-            const response = await fetch(`${API_BASE}/balance`);
-            const data = await handleApiError(response);
-            balance = data;
-            balanceEl.textContent = data.toLocaleString();
-            renderItems();
-        } catch (error) {
-            console.error('Ошибка баланса:', error);
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch(`${API_BASE}${endpoint}`, options);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+            return data;
+        } catch (err) {
+            showToast(err.message, 'error');
+            throw err;
         }
     }
 
-    async function hireMiner(minerType) {
+    async function updateData() {
+        if(isWin) return;
         try {
-            const response = await fetch(`${API_BASE}/miners`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ miner_type: minerType }),
-            });
-            await handleApiError(response);
-            showNotification(`✅ Шахтер "${minerType}" нанят!`, 'success');
-            await fetchBalance();
-            await fetchMiners();
-        } catch (error) {
-            showNotification(`❌ ${error.message}`, 'error');
-        }
+            const bal = await apiCall('/balance');
+            const el = document.getElementById('balance-display');
+            if (bal !== currentBalance) {
+                el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+                currentBalance = bal;
+            }
+            el.innerText = bal.toLocaleString();
+
+            const minersMap = await apiCall('/miners');
+            renderMiners(Object.values(minersMap));
+
+            const eq = await apiCall('/items');
+            renderEquipment(eq);
+        } catch (e) { console.warn("Sync error", e); }
     }
 
-    async function fetchMiners() {
-        try {
-            const response = await fetch(`${API_BASE}/miners`);
-            const data = await handleApiError(response);
-            miners = Object.entries(data).map(([id, minerInfo]) => ({
-                id, ...minerInfo
-            }));
-            renderMiners();
-        } catch (error) {
-            console.error('Ошибка шахтеров:', error);
-        }
+    function renderEquipment(eq) {
+        const container = document.getElementById('equipment-list');
+        const items = [ { id: 'pick', ...eq.pick }, { id: 'vent', ...eq.vent }, { id: 'trolley', ...eq.trolley } ];
+
+        container.innerHTML = items.map(item => {
+            const conf = itemConfig[item.id];
+            const isAffordable = currentBalance >= item.cost;
+            return `
+            <div class="card-item ${item.isBought ? 'bought' : ''}">
+                <div class="card-icon"><i class="fa-solid ${conf.icon}"></i></div>
+                <h3>${conf.name}</h3>
+                <div class="mono price-tag">${item.cost.toLocaleString()}</div>
+                <button class="btn" onclick="buyItem('${item.id}')" ${item.isBought ? 'disabled' : ''}
+                    style="${!isAffordable && !item.isBought ? 'opacity: 0.5' : ''}">
+                    ${item.isBought ? 'ACTIVE' : 'PURCHASE'}
+                </button>
+            </div>`;
+        }).join('');
     }
 
-    async function fetchItems() {
-        try {
-            const response = await fetch(`${API_BASE}/items`);
-            const data = await handleApiError(response);
-
-            items.pick.isBuyed = data.Pick?.IsBuyed ?? data.pick?.isBuyed ?? false;
-            items.pick.cost    = data.Pick?.Cost    ?? data.pick?.cost    ?? 5000;
-            items.vent.isBuyed = data.Vent?.IsBuyed ?? data.vent?.isBuyed ?? false;
-            items.vent.cost    = data.Vent?.Cost    ?? data.vent?.cost    ?? 15000;
-            items.trolley.isBuyed = data.Trolley?.IsBuyed ?? data.trolley?.isBuyed ?? false;
-            items.trolley.cost    = data.Trolley?.Cost    ?? data.trolley?.cost    ?? 50000;
-
-            renderItems();
-        } catch (error) {
-            console.error('Ошибка оборудования:', error);
+    function renderMiners(miners) {
+        document.getElementById('miner-count').innerText = miners.length;
+        const container = document.getElementById('miner-list');
+        if (miners.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #555;">No active units.</div>';
+            return;
         }
+
+        miners.sort((a, b) => b.coalPower - a.coalPower);
+
+        container.innerHTML = miners.map(m => {
+            let maxEnergy = m.minerType === 'powerful' ? 60 : (m.minerType === 'normal' ? 45 : 30);
+            const energyPercent = Math.max(0, (m.energy / maxEnergy) * 100);
+
+            let barColor = 'var(--success)';
+            if(energyPercent < 30) barColor = 'var(--danger)';
+            else if(energyPercent < 60) barColor = 'var(--accent-primary)';
+
+            // Fix: ensure type exists in config or fallback
+            const iconClass = minerIcons[m.minerType] || 'fa-user';
+
+            return `
+            <div class="miner-row ${m.minerType}">
+                <div class="miner-avatar"><i class="fa-solid ${iconClass}"></i></div>
+                <div class="miner-info">
+                    <span class="miner-type">${m.minerType.toUpperCase()}</span>
+                    <span class="miner-id mono">ID: ${m.id.substring(0,6)}</span>
+                    <div class="energy-bar-bg"><div class="energy-bar-fill" style="width: ${energyPercent}%; background: ${barColor}"></div></div>
+                </div>
+                <div class="miner-stats-box">
+                    <div class="mono" style="font-size: 1.1rem; color: var(--text-main)">+${m.coalPower}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted)">/ CYCLE</div>
+                </div>
+            </div>`;
+        }).join('');
     }
 
-    async function buyItem(itemType) {
-        try {
-            const response = await fetch(`${API_BASE}/items/${itemType}`, {
-                method: 'POST',
-            });
-            await handleApiError(response);
-            showNotification(`✅ Куплено: ${itemType}!`, 'success');
-            await fetchBalance();
-            await fetchItems();
-        } catch (error) {
-            showNotification(`❌ ${error.message}`, 'error');
-        }
+    async function hireMiner(type) {
+        try { await apiCall('/miners', 'POST', { miner_type: type }); showToast('UNIT DEPLOYED', 'success'); updateData(); } catch(e) {}
+    }
+
+    async function buyItem(type) {
+        try { await apiCall(`/items/${type}`, 'POST'); showToast('UPGRADE COMPLETE', 'success'); updateData(); } catch(e) {}
     }
 
     async function checkWin() {
         try {
-            const response = await fetch(`${API_BASE}/win`);
-            const data = await handleApiError(response);
-
-            winStatsEl.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-label">💰 Финальный баланс</div>
-                        <div class="stat-value">${(data.Balance || data.balance || 0).toLocaleString()}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">⏱️ Время игры</div>
-                        <div class="stat-value">${data.TotalTime || data.totalTime || 'N/A'}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">👷 Маленькие</div>
-                        <div class="stat-value">${data.LittleMinersHired || data.littleMinersHired || 0}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">👷 Обычные</div>
-                        <div class="stat-value">${data.NormalMinersHired || data.normalMinersHired || 0}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">👷 Мощные</div>
-                        <div class="stat-value">${data.PowerfulMinersHired || data.powerfulMinersHired || 0}</div>
-                    </div>
-                `;
-            winMessageEl.style.display = 'block';
-            showNotification('🏆 ПОБЕДА!', 'success');
-        } catch (error) {
-            showNotification(`⏳ ${error.message}`, 'error');
+            const stats = await apiCall('/win');
+            isWin = true;
+            document.getElementById('win-modal').style.display = 'flex';
+            document.getElementById('win-stats').innerHTML = `
+                <div class="stat-item"><span class="stat-label">TIME</span><span class="stat-value mono">${stats.totalTime}</span></div>
+                <div class="stat-item"><span class="stat-label">EARNINGS</span><span class="stat-value mono">${stats.totalBalance.toLocaleString()}</span></div>
+                <div class="stat-item" style="grid-column: 1 / -1"><span class="stat-label">UNITS</span><span class="stat-value mono">${stats.littleMinersHired + stats.normalMinersHired + stats.powerfulMinersHired}</span></div>
+            `;
+        } catch (e) {
+            if(!e.message.includes('412')) showToast(e.message, 'error');
+            else showToast("Requirements not met.", 'error');
         }
     }
 
-    function renderMiners() {
-        minersListEl.innerHTML = '';
-
-        if (miners.length === 0) {
-            minersListEl.innerHTML = '<p>👷 Пока нет шахтеров</p>';
-            littleMinersCount = 0;
-            normalMinersCount = 0;
-            powerfulMinersCount = 0;
-            littleMinersEl.textContent   = '0';
-            normalMinersEl.textContent   = '0';
-            powerfulMinersEl.textContent = '0';
-            return;
-        }
-
-        // сбрасываем счётчики перед пересчётом
-        littleMinersCount = 0;
-        normalMinersCount = 0;
-        powerfulMinersCount = 0;
-
-        minersListEl.innerHTML = miners.map(miner => {
-            const type   = miner.minerType || miner.MinerType || 'unknown';
-            const energy = miner.energy    || miner.Energy    || 0;
-            const power  = miner.coalPower || miner.CoalPower || 0;
-
-            if (type === 'little')      littleMinersCount++;
-            else if (type === 'normal') normalMinersCount++;
-            else if (type === 'powerful') powerfulMinersCount++;
-
-            return `
-                    <div class="miner-item">
-                        <div>
-                            <div class="miner-type">${type}</div>
-                            <div class="miner-info">ID: ${miner.id || miner.ID}</div>
-                        </div>
-                        <div>
-                            <div class="miner-energy">⚡ ${energy}</div>
-                            <div>💎 ${power}</div>
-                        </div>
-                    </div>
-                `;
-        }).join('');
-
-        littleMinersEl.textContent   = littleMinersCount;
-        normalMinersEl.textContent   = normalMinersCount;
-        powerfulMinersEl.textContent = powerfulMinersCount;
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        const icon = document.getElementById('toast-icon');
+        t.className = `toast ${type === 'error' ? 'error' : 'success'} show`;
+        icon.className = type === 'error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check-circle';
+        document.getElementById('toast-msg').innerText = msg;
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    function renderItems() {
-        if (balance === undefined) return;
-
-        itemsListEl.innerHTML = '';
-        const itemTypes = [
-            { type: 'pick',    name: '⛏️ Кирка',       data: items.pick },
-            { type: 'vent',    name: '💨 Вентиляция',  data: items.vent },
-            { type: 'trolley', name: '🚜 Тележка',     data: items.trolley }
-        ];
-
-        itemTypes.forEach(item => {
-            const itemEl = document.createElement('div');
-            itemEl.className = 'item-card';
-            const isPurchased = item.data.isBuyed;
-            const canAfford   = balance >= item.data.cost;
-
-            itemEl.innerHTML = `
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-cost">💰 ${item.data.cost.toLocaleString()}</div>
-                    <div class="item-status ${isPurchased ? 'purchased' : 'not-purchased'}">
-                        ${isPurchased ? '✓ Куплено' : '✗ Доступно'}
-                    </div>
-                    <button class="buy-item-btn" data-type="${item.type}"
-                            ${isPurchased || !canAfford ? 'disabled' : ''}>
-                        ${isPurchased ? '✅ Куплено' : `Купить (-${item.data.cost.toLocaleString()})`}
-                    </button>
-                `;
-            itemsListEl.appendChild(itemEl);
-        });
-    }
-
-    function init() {
-        Promise.all([fetchBalance(), fetchMiners(), fetchItems()]);
-
-        setInterval(() => {
-            fetchBalance();
-            fetchMiners();
-        }, 3000);
-
-        document.addEventListener('click', async (e) => {
-            if (e.target.matches('#hire-btn:not([disabled])')) {
-                const minerType = minerTypeSelect.value;
-                hireBtn.disabled = true;
-                setTimeout(() => hireBtn.disabled = false, 1000);
-                await hireMiner(minerType);
-            }
-            if (e.target.matches('.buy-item-btn:not([disabled])')) {
-                const itemType = e.target.dataset.type;
-                await buyItem(itemType);
-            }
-            if (e.target.matches('#refresh-miners')) {
-                await fetchMiners();
-            }
-            if (e.target.matches('#check-win')) {
-                await checkWin();
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
+    updateData();
+    setInterval(updateData, 1000);
 </script>
+
 </body>
 </html>
