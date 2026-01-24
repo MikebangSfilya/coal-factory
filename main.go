@@ -29,7 +29,7 @@ func main() {
 
 	cfg := config.Load()
 
-	equipment.Init(cfg)
+	equipment.Load(cfg)
 
 	equip := equipment.NewEquipment()
 

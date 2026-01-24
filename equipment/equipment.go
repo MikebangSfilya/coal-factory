@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	PickCost    = 5000
-	VentCost    = 15000
-	TrolleyCost = 50000
+	PickCost    int
+	VentCost    int
+	TrolleyCost int
 )
 
-func Init(cfg *config.Configuration) {
+func Load(cfg *config.Configuration) {
 	PickCost = cfg.PickCost
 	VentCost = cfg.VentCost
 	TrolleyCost = cfg.TrolleyCost
