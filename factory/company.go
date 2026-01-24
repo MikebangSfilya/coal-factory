@@ -235,7 +235,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", pick,
 				"cost", equipment.PickCost,
 			)
-			c.Stats.Equipment.Buy(pick)
+			_, err := c.Stats.Equipment.Buy(pick)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.PickCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -249,7 +252,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", vent,
 				"cost", equipment.VentCost,
 			)
-			c.Stats.Equipment.Buy(vent)
+			_, err := c.Stats.Equipment.Buy(vent)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.VentCost))
 		} else {
 			return nil, ErrNotEnoughMoney
@@ -263,7 +269,10 @@ func (c *Company) Buy(ctx context.Context, itemType string) (*equipment.Equipmen
 				"item", trolley,
 				"cost", equipment.TrolleyCost,
 			)
-			c.Stats.Equipment.Buy(trolley)
+			_, err := c.Stats.Equipment.Buy(trolley)
+			if err != nil {
+				return nil, err
+			}
 			c.Stats.Balance.Add(-int64(equipment.TrolleyCost))
 		} else {
 			return nil, ErrNotEnoughMoney
