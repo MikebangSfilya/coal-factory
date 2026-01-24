@@ -73,7 +73,7 @@ func (m *LittleMiner) Info() MinerInfo {
 	return MinerInfo{
 		ID:        m.Id,
 		MinerType: MinerTypeLittle,
-		Energy:    m.Energy.Load(),
+		Energy:    Energy(m.Energy.Load()),
 		CoalPower: Coal(m.CoalIncome.Load()),
 		Cost:      LittleSalary,
 	}

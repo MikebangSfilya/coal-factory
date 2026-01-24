@@ -14,6 +14,6 @@ type MinerInfo struct {
 	ID        uuid.UUID
 	MinerType MinerType
 	CoalPower Coal
-	Energy    int64
-	Cost      int64
+	Energy    Energy
+	Cost      Coal
 }

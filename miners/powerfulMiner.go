@@ -75,7 +75,7 @@ func (m *PowerfulMiner) Info() MinerInfo {
 		ID:        m.Id,
 		MinerType: MinerTypePowerful,
 		CoalPower: Coal(m.CoalIncome.Load()),
-		Energy:    m.Energy.Load(),
+		Energy:    Energy(m.Energy.Load()),
 		Cost:      PowerfulSalary,
 	}
 }
