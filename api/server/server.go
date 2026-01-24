@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	_ "coalFactory/docs"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/swaggo/http-swagger"
 )
 
 type HTTPRepo interface {
@@ -39,6 +41,8 @@ func New(addr string, handlers HTTPRepo) *Server {
 			next.ServeHTTP(w, r)
 		})
 	})
+
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	// Группировка маршрутов
 	r.Route("/miners", func(r chi.Router) {

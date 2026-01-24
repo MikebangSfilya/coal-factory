@@ -1,0 +1,232 @@
+basePath: /
+definitions:
+  dto_in.DTOHireMiner:
+    properties:
+      miner_type:
+        type: string
+    type: object
+  dto_out.DTORespItem:
+    properties:
+      item:
+        type: string
+      status:
+        type: string
+    type: object
+  dto_out.DTOStats:
+    properties:
+      balance:
+        format: int64
+        type: integer
+      littleMinersHired:
+        type: integer
+      normalMinersHired:
+        type: integer
+      powerfulMinersHired:
+        type: integer
+      totalBalance:
+        format: int64
+        type: integer
+      totalTime:
+        type: string
+    type: object
+  dto_out.ErrorResponse:
+    properties:
+      error:
+        type: string
+      time:
+        type: string
+    type: object
+  equipment.Equipments:
+    properties:
+      allBuy:
+        type: boolean
+      pick:
+        $ref: '#/definitions/equipment.Pick'
+      trolley:
+        $ref: '#/definitions/equipment.Trolley'
+      vent:
+        $ref: '#/definitions/equipment.Vent'
+    type: object
+  equipment.Pick:
+    properties:
+      cost:
+        type: integer
+      isBought:
+        type: boolean
+    type: object
+  equipment.Trolley:
+    properties:
+      cost:
+        type: integer
+      isBought:
+        type: boolean
+    type: object
+  equipment.Vent:
+    properties:
+      cost:
+        type: integer
+      isBought:
+        type: boolean
+    type: object
+  miners.MinerInfo:
+    properties:
+      coalPower:
+        format: int64
+        type: integer
+      cost:
+        format: int64
+        type: integer
+      energy:
+        format: int64
+        type: integer
+      id:
+        type: string
+      minerType:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API coal-factory
+  title: Coal Factory API
+  version: "1.0"
+paths:
+  /balance:
+    get:
+      description: Возвращает текущее количество добытого угля
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+      summary: Текущий баланс
+      tags:
+      - economy
+  /items:
+    get:
+      description: Возвращает информацию о текущем оборудовании и его статусе покупки
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/equipment.Equipments'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+      summary: Состояние оборудования
+      tags:
+      - items
+  /items/{type}:
+    post:
+      description: Позволяет приобрести кирку, вентиляцию или тележку за уголь
+      parameters:
+      - description: Тип предмета (pick, vent, trolley)
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto_out.DTORespItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+      summary: Купить оборудование
+      tags:
+      - items
+  /miners:
+    get:
+      description: Возвращает карту всех активных шахтеров в компании
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/miners.MinerInfo'
+            type: object
+      summary: Список всех рабочих
+      tags:
+      - miners
+    post:
+      consumes:
+      - application/json
+      description: Списывает уголь и создает нового воркера выбранного типа
+      parameters:
+      - description: Тип шахтера
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto_in.DTOHireMiner'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/miners.MinerInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+      summary: Нанять нового шахтера
+      tags:
+      - miners
+  /miners/{id}:
+    get:
+      description: Возвращает данные конкретного шахтера по его ID
+      parameters:
+      - description: ID шахтера
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/miners.MinerInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+      summary: Информация о шахтере
+      tags:
+      - miners
+  /win:
+    get:
+      description: Если всё оборудование куплено, возвращает финальную статистику
+        и инициирует остановку сервера
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto_out.DTOStats'
+        "412":
+          description: Precondition Failed
+          schema:
+            $ref: '#/definitions/dto_out.ErrorResponse'
+      summary: Проверить условия победы
+      tags:
+      - game
+swagger: "2.0"

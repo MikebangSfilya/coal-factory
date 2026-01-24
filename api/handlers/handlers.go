@@ -44,7 +44,17 @@ func New(handle HandleRepo) *Handlers {
 	}
 }
 
-// Hire возвращает обработчик для найма минеров
+// Hire godoc
+// @Summary      Нанять нового шахтера
+// @Description  Списывает уголь и создает нового воркера выбранного типа
+// @Tags         miners
+// @Accept       json
+// @Produce      json
+// @Param        request body dto_in.DTOHireMiner true "Тип шахтера"
+// @Success      200  {object}  miners.MinerInfo
+// @Failure      400  {object}  dto_out.ErrorResponse
+// @Failure      402  {object}  dto_out.ErrorResponse
+// @Router       /miners [post]
 func (h *Handlers) Hire() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), HireTimeOut)
@@ -87,7 +97,13 @@ func (h *Handlers) Hire() http.HandlerFunc {
 	}
 }
 
-// GetMiners возвращает обработчик списка всех минеров
+// GetMiners godoc
+// @Summary      Список всех рабочих
+// @Description  Возвращает карту всех активных шахтеров в компании
+// @Tags         miners
+// @Produce      json
+// @Success      200  {object}  map[string]miners.MinerInfo
+// @Router       /miners [get]
 func (h *Handlers) GetMiners() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
@@ -105,7 +121,15 @@ func (h *Handlers) GetMiners() http.HandlerFunc {
 	}
 }
 
-// GetInfoMiner возвращает обработчик инфо конкретного минера
+// GetInfoMiner godoc
+// @Summary      Информация о шахтере
+// @Description  Возвращает данные конкретного шахтера по его ID
+// @Tags         miners
+// @Produce      json
+// @Param        id   path      string  true  "ID шахтера"
+// @Success      200  {object}  miners.MinerInfo
+// @Failure      400  {object}  dto_out.ErrorResponse
+// @Router       /miners/{id} [get]
 func (h *Handlers) GetInfoMiner() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
@@ -125,7 +149,13 @@ func (h *Handlers) GetInfoMiner() http.HandlerFunc {
 	}
 }
 
-// GetBal возвращает обработчик баланса
+// GetBal godoc
+// @Summary      Текущий баланс
+// @Description  Возвращает текущее количество добытого угля
+// @Tags         economy
+// @Produce      json
+// @Success      200  {integer} int
+// @Router       /balance [get]
 func (h *Handlers) GetBal() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
@@ -137,7 +167,14 @@ func (h *Handlers) GetBal() http.HandlerFunc {
 	}
 }
 
-// CheckWin возвращает обработчик проверки победы и закрытия сервера
+// CheckWin godoc
+// @Summary      Проверить условия победы
+// @Description  Если всё оборудование куплено, возвращает финальную статистику и инициирует остановку сервера
+// @Tags         game
+// @Produce      json
+// @Success      200  {object}  dto_out.DTOStats
+// @Failure      412  {object}  dto_out.ErrorResponse
+// @Router       /win [get]
 func (h *Handlers) CheckWin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
@@ -165,7 +202,15 @@ func (h *Handlers) CheckWin() http.HandlerFunc {
 	}
 }
 
-// BuyItem возвращает обработчик покупки предмета
+// BuyItem godoc
+// @Summary      Купить оборудование
+// @Description  Позволяет приобрести кирку, вентиляцию или тележку за уголь
+// @Tags         items
+// @Produce      json
+// @Param        type  path      string  true  "Тип предмета (pick, vent, trolley)"
+// @Success      200  {object}  dto_out.DTORespItem
+// @Failure      400  {object}  dto_out.ErrorResponse
+// @Router       /items/{type} [post]
 func (h *Handlers) BuyItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), NormalTimeOut)
@@ -187,6 +232,14 @@ func (h *Handlers) BuyItem() http.HandlerFunc {
 	}
 }
 
+// ItemsInfo godoc
+// @Summary      Состояние оборудования
+// @Description  Возвращает информацию о текущем оборудовании и его статусе покупки
+// @Tags         items
+// @Produce      json
+// @Success      200  {object}  equipment.Equipments
+// @Failure      500  {object}  dto_out.ErrorResponse
+// @Router       /items [get]
 func (h *Handlers) ItemsInfo() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {

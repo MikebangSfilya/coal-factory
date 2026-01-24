@@ -17,6 +17,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title           Coal Factory API
+// @version         1.0
+// @description     API coal-factory
+
+// @host      localhost:8080
+// @BasePath  /
 func main() {
 
 	// the application is listening for the SIGTERM signal to exit
