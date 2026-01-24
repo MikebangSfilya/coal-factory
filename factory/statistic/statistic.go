@@ -2,10 +2,13 @@ package statistic
 
 import (
 	"coalFactory/equipment"
+	"errors"
 	"log/slog"
 	"sync/atomic"
 	"time"
 )
+
+var errNotWin = errors.New("don't have all Equipments")
 
 type CompanyStats struct {
 	Balance             *atomic.Int64
