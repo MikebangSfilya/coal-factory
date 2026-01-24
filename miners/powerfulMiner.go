@@ -66,6 +66,8 @@ func (m *PowerfulMiner) Run(ctx context.Context) <-chan Coal {
 			m.Energy--
 			send := currInc
 			currInc += increaseIncome
+			m.CoalIncome = send
+
 			m.Unlock()
 
 			select {

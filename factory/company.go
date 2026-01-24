@@ -39,11 +39,6 @@ type Company struct {
 
 func NewCompany(ctx context.Context, equip *equipment.Equipments) *Company {
 	companyContext, companyStop := context.WithCancel(ctx)
-	slog.Info( //Лог на будущее если будет возможность делать несколько игроков
-		"create new Company",
-		"layer", "company",
-		"operation", "create",
-	)
 	return &Company{
 		Miners:         make(map[uuid.UUID]Miners),
 		Income:         make(chan miners.Coal),

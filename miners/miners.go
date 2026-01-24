@@ -11,9 +11,9 @@ type (
 )
 
 type MinerInfo struct {
-	ID        uuid.UUID
-	MinerType MinerType
-	CoalPower Coal
-	Energy    Energy
-	Cost      Coal
+	ID        uuid.UUID `json:"id"`
+	MinerType MinerType `json:"minerType"`
+	CoalPower Coal      `json:"coalPower"`
+	Energy    Energy    `json:"energy"`
+	Cost      Coal      `json:"cost"`
 }
